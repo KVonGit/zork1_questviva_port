@@ -1,0 +1,1331 @@
+<?xml version="1.0"?>
+<!--
+  GLOBALS for ZORK 1
+-->
+<library>
+<!--
+    "SUBTITLE GLOBAL OBJECTS"
+-->
+
+  <object name="GLOBAL_OBJECTS">
+    <FLAGS>RMUNGBIT INVISIBLE TOUCHBIT SURFACEBIT TRYTAKEBIT OPENBIT SEARCHBIT TRANSBIT ONBIT RLANDBIT FIGHTBIT STAGGERED WEARBIT</FLAGS>
+    <RMUNGBIT />
+    <INVISIBLE />
+    <TOUCHBIT />
+    <SURFACEBIT />
+    <TRYTAKEBIT />
+    <OPENBIT />
+    <SEARCHBIT />
+    <TRANSBIT />
+    <ONBIT />
+    <RLANDBIT />
+    <FIGHTBIT />
+    <STAGGERED />
+    <WEARBIT />
+  </object>
+
+  <object name="LOCAL_GLOBALS">
+    <alt type="stringlist">
+      <value>ZZMGCK</value>
+    </alt>
+    <SYNONYM>ZZMGCK</SYNONYM>
+    <attr name="DESC_FCN">PATH_OBJECT</attr>
+    <GLOBAL>GLOBAL_OBJECTS</GLOBAL>
+    <ADVFCN type="int">0</ADVFCN>
+    <FDESC>F</FDESC>
+    <LDESC>F</LDESC>
+    <PSEUDO>"FOOBAR" V_WALK</PSEUDO>
+    <CONTFCN type="int">0</CONTFCN>
+    <VTYPE type="int">1</VTYPE>
+    <SIZE type="int">0</SIZE>
+    <CAPACITY type="int">0</CAPACITY>
+  </object>
+
+<!--
+    ;"Yes, this synonym for LOCAL-GLOBALS needs to exist... sigh"
+-->
+
+  <object name="ROOMS">
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <scenery />
+    <exit alias="in" to="ROOMS">
+      <inherit name="indirection" />
+    </exit>
+  </object>
+
+  <object name="INTNUM">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>number</alias>
+    <alt type="stringlist">
+      <value>intnum</value>
+    </alt>
+    <SYNONYM>INTNUM</SYNONYM>
+    <FLAGS>TOOLBIT</FLAGS>
+    <TOOLBIT />
+    <scenery />
+  </object>
+  
+  <object name="PSEUDO_OBJECT">
+    <inherit name="editor_object" />
+    <parent type="object">LOCAL_GLOBALS</parent>
+    <LOC type="object">LOCAL_GLOBALS</LOC>
+    <alias>pseudo</alias>
+    <ACTION>CRETIN_FCN</ACTION>
+    <scenery />
+  </object>
+
+  <object name="IT"> <!-- UNUSED IN THIS PORT -->
+    <inherit name="editor_object" />
+    <!-- <parent type="object">GLOBAL_OBJECTS</parent> -->
+    <!-- <LOC type="object">GLOBAL_OBJECTS</LOC> -->
+    <alias>random object</alias>
+    <scenery />
+    <TOUCHBIT />
+    <alt type="stringlist">
+      <value>it</value>
+      <value>them</value>
+      <value>her</value>
+      <value>him</value>
+    </alt>
+    <SYNONYM>IT THEM HER HIM</SYNONYM>
+    <FLAGS>NDESCBIT TOUCHBIT</FLAGS>
+    <NDESCBIT />
+    <visible type="boolean">false</visible>
+  </object>
+  
+  <object name="NOT_HERE_OBJECT">
+    <inherit name="editor_object" />
+    <alias>such thing</alias>
+    <ACTION>NOT_HERE_OBJECT_F</ACTION>
+  </object>
+
+  <function name="NOT_HERE_OBJECT_F" type="boolean">
+    if (GLOBAL.PRSO = NOT_HERE_OBJECT and GLOBAL.PRSI = NOT_HERE_OBJECT) {
+      msg ("Those things aren't here!")
+    }
+    else if (GLOBAL.PRSO = NOT_HERE_OBJECT) {
+      TBL = GLOBAL.P_PRSO
+    }
+    else {
+      TBL = GLOBAL.P_PRSI
+      PRSO_P = false
+    }
+    GLOBAL.P_CONT = false
+    GLOBAL.QUOTE_FLAG = false
+    if (GLOBAL.WINNER = GLOBAL.PLAYER) {
+      TELL ("You can't see any ")
+      NOT_HERE_PRINT (PRSO_P)
+      msg ("here!")
+    }
+    else {
+      TELL ("The " + GLOBAL.WINNER.alias + " seems confused. \"I don't see any ")
+      NOT_HERE_PRINT (PRSO_P)
+      msg ("here!\"")
+    }
+    return (true)
+  </function>
+
+  <function name="NOT_HERE_PRINT" parameters="PRSO_P">
+    if (GLOBAL.P_OFLAG) {
+      if (GLOBAL.P_XADJ) {
+        msg (GLOBAL.P_XADJN)
+      }
+      if (GLOBAL.P_XNAM) {
+        msg (GLOBAL.P_XNAM)
+      }
+    }
+    else if (PRSO_P) {
+      msg (GET(GLOBAL.P_ITBL, GLOBAL.P_NC1) + GET(GLOBAL.P_ITBLL, GLOBAL.P_NC2L))
+    }
+  </function>
+  
+  <function name="NULL_F" parameters="A1, A2" type="boolean">
+    if (not IsDefined("A1")) {
+      A1 = false
+    }
+    if (not IsDefined("A2")) {
+      A2 = false
+    }
+    return (false)
+  </function>
+
+<!--
+    "Objects WHICH WERE ORIGINALLY shared by all three Zorks go here"
+-->
+
+<!--
+    THESE GLOBALS ARE ATTRIBUTES ON THE GLOBAL OBJECT IN THIS FILE.
+    
+  <GLOBAL LOAD-MAX 100>
+
+  <GLOBAL LOAD-ALLOWED 100>
+-->
+
+  <object name="BLESSINGS">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>blessings</alias>
+    <scenery />
+    <SYNONYM>BLESSINGS GRACES</SYNONYM>
+    <alt type="stringlist">
+      <value>graces</value>
+    </alt>
+    <FLAGS>NDESCBIT</FLAGS>
+    <NDESCBIT />
+  </object>
+
+  <object name="STAIRS">
+    <inherit name="editor_object" />
+    <parent type="object">LOCAL_GLOBALS</parent>
+    <LOC type="object">LOCAL_GLOBALS</LOC>
+    <alias>stairs</alias>
+    <scenery />
+    <SYNONYM>STAIRS STEPS STAIRCASE STAIRWAY</SYNONYM>
+    <ADJECTIVE>STONE DARK MARBLE FORBIDDING STEEP</ADJECTIVE>
+    <FLAGS>NDESCBIT CLIMBBIT</FLAGS>
+    <NDESCBIT />
+    <CLIMBBIT />
+    <ACTION>STAIRS_F</ACTION>
+  </object>
+
+  <function name="STAIRS_F" type="boolean">
+    if (VERB_P(V_THROUGH)) {
+      msg ("You should say whether you want to go up or down.")
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="SAILOR">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>sailor</alias>
+    <scenery />
+    <alt type="stringlist">
+      <value>footpad</value>
+      <value>aviator</value>
+    </alt>
+    <SYNONYM>SAILOR FOOTPAD AVIATOR</SYNONYM>
+    <FLAGS>NDESCBIT</FLAGS>
+    <NDESCBIT />
+    <ACTION>SAILOR_FCN</ACTION>
+  </object>
+
+  <function name="SAILOR_FCN" type="boolean">
+    if (VERB_P(V_TELL)) {
+      GLOBAL.P_CONT = false
+      GLOBAL.QUOTE_FLAG = false
+      msg ("You can't talk to the sailor that way.")
+      return (true)
+    }
+    else if (VERB_P(V_EXAMINE)) {
+      msg ("There is no sailor to be seen.")
+      return (true)
+    }
+    else if (VERB_P(V_HELLO)) {
+      GLOBAL.HS = GLOBAL.HS + 1
+      if (GLOBAL.HS % 20 = 0) {
+        msg ("You seem to be repeating yourself.")
+      }
+      else if (GLOBAL.HS % 10 = 0) {
+        msg ("I think that phrase is getting a bit worn out.")
+      }
+      else {
+        msg ("Nothing happens here.")
+      }
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="GROUND">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>ground</alias>
+    <alt type="stringlist">
+      <value>dirt</value>
+      <value>floor</value>
+      <value>sand</value>
+    </alt>
+    <SYNONYM>GROUND SAND DIRT FLOOR</SYNONYM>
+    <ACTION>GROUND_FUNCTION</ACTION>
+    <scenery />
+  </object>
+
+  <function name="GROUND_FUNCTION" type="boolean">
+    if (VERB_P(V_PUT) and GLOBAL.PRSI = GROUND) {
+      PERFORM (V_DROP, GLOBAL.PRSO, NOTHING)
+      return (true)
+    }
+    else if (GLOBAL.HERE = SANDY_CAVE) {
+      return (SandFunction())
+    }
+    return (false)
+  </function>
+
+  <object name="GRUE">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>lurking grue</alias>
+    <alt type="stringlist">
+      <value>lurking grue</value>
+      <value>sinister grue</value>
+      <value>hungry grue</value>
+      <value>silent grue</value>
+    </alt>
+    <SYNONYM>GRUE</SYNONYM>
+    <ADJECTIVE>LURKING SINISTER HUNGRY SILENT</ADJECTIVE>
+    <ACTION>GRUE_FUNCTION</ACTION>
+    <scenery />
+  </object>
+
+  <function name="GRUE_FUNCTION" type="boolean">
+    if (VERB_P(V_EXAMINE)) {
+      msg ("The grue is a sinister, lurking presence in the dark places of the earth. Its favorite diet is adventurers, but its insatiable appetite is tempered by its fear of light. No grue has ever been seen by the light of day, and few have survived its fearsome jaws to tell the tale.")
+      return (true)
+    }
+    else if (VERB_P(V_FIND)) {
+      msg ("There is no grue here, but I'm sure there is at least one lurking in the darkness nearby. I wouldn't let my light go out if I were you!")
+      return (true)
+    }
+    else if (VERB_P(V_LISTEN)) {
+      msg ("It makes no sound but is always lurking in the darkness nearby.")
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="LUNGS">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>blast of air</alias>
+    <alt type="stringlist">
+      <value>lungs</value>
+      <value>air</value>
+      <value>mouth</value>
+      <value>breath</value>
+    </alt>
+    <scenery />
+    <SYNONYM>LUNGS AIR MOUTH BREATH</SYNONYM>
+    <FLAGS>NDESCBIT</FLAGS>
+    <NDESCBIT />
+  </object>
+
+  <object name="ME"> <!-- Quest handles "me" as the POV. -->
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>you</alias>
+    <SYNONYM>ME MYSELF SELF CRETIN</SYNONYM>
+    <alt type="simplestringlist">
+      ME
+      MYSELF
+      SELF
+      CRETIN
+    </alt>
+    <FLAGS>ACTORBIT</FLAGS>
+    <ACTORBIT />
+    <ACTION>CRETIN_FCN</ACTION>
+    <scenery />
+  </object>
+
+  <function name="CRETIN_FCN" type="boolean">
+    VERB = GLOBAL.PRSA
+    if (VERB_P(V_TELL)) {
+      GLOBAL.P_CONT = false
+      GLOBAL.QUOTE_FLAG = false
+      msg ("Talking to yourself is said to be a sign of impending mental collapse.")
+      return (true)
+    }
+    else if (VERB_P(V_GIVE) and GLOBAL.PRSI = ME) {
+      PERFORM (V_TAKE, GLOBAL.PRSO, NOTHING)
+      return (true)
+    }
+    else if (VERB_P(V_MAKE)) {
+      msg ("Only you can do that.")
+      return (true)
+    }
+    else if (VERB_P(V_DISEMBARK)) {
+      msg ("You'll have to do that on your own.")
+      return (true)
+    }
+    else if (VERB_P(V_EAT)) {
+      msg ("Auto-cannibalism is not the answer.")
+      return (true)
+    }
+    else if (VERB_P(V_ATTACK)) {
+      if (not GLOBAL.PRSI = NOTHING) {
+        if (GLOBAL.PRSI.WEAPONBIT) {
+          JIGS_UP ("If you insist.... Poof, you're dead!")
+          return (true)
+        }
+      }
+      msg ("Suicide is not the answer.")
+      return (true)
+    }
+    else if (VERB_P(V_THROW)) {
+      if (GLOBAL.PRSO = ME) {
+        msg ("Why don't you just walk like normal people?")
+        return (true)
+      }
+    }
+    else if (VERB_P(V_TAKE)) {
+      msg ("How romantic!")
+      return (true)
+    }
+    else if (VERB_P(V_EXAMINE)) {
+      if (GLOBAL.HERE = LOC(MIRROR_1) or GLOBAL.HERE = LOC(MIRROR_2)) {
+        msg ("Your image in the mirror looks tired.")
+      }
+      else {
+        msg ("That's difficult unless your eyes are prehensile.")
+      }
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="ADVENTURER">
+    <inherit name="editor_object" />
+    <!--Game won't load without setting this object's parent first. -->
+    <parent type="object">WEST_OF_HOUSE</parent> 
+    <LOC type="object">WEST_OF_HOUSE</LOC>
+    <alias>cretin</alias>
+    <changedalias type="script">
+      Log("changed ADVENTURER alias! Resetting to 'cretin'.")
+      ADVENTURER.alias = "cretin"
+    </changedalias>
+    <scenery />
+    <visible type="boolean">false</visible>
+    <SYNONYM>ADVENTURER</SYNONYM>
+    <FLAGS>NDESCBIT INVISIBLE SACREDBIT ACTORBIT</FLAGS>
+    <NDESCBIT />
+    <INVISIBLE />
+    <SACREDBIT />
+    <ACTORBIT />
+    <STRENGTH type="int">0</STRENGTH>
+    <!-- <ACTION type="int">0</ACTION> -->
+  </object>
+
+  <object name="PATHOBJ">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>passage</alias>
+    <scenery />
+    <SYNONYM>TRAIL PATH</SYNONYM>
+    <ADJECTIVE>FOREST NARROW LONG WINDING</ADJECTIVE>
+    <alt type="stringlist">
+      <value>trail</value>
+      <value>path</value>
+    </alt>
+    <FLAGS>NDESCBIT</FLAGS>
+    <NDESCBIT />
+    <ACTION>PATH_OBJECT</ACTION>
+  </object>
+
+  <function name="PATH_OBJECT" type="boolean">
+    if (VERB_P(V_TAKE) or VERB_P(V_FOLLOW)) {
+      msg ("You must specify a direction to go.")
+      return (true)
+    }
+    else if (VERB_P(V_FIND)) {
+      msg ("I can't help you there....")
+      return (true)
+    }
+    else if (VERB_P(V_DIG)) {
+      msg ("Not a chance.")
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="ZORKMID">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>zorkmid</alias>
+    <SYNONYM>ZORKMID</SYNONYM>
+    <ACTION>ZORKMID_FUNCTION</ACTION>
+    <scenery />
+  </object>
+
+  <function name="ZORKMID_FUNCTION" type="boolean">
+    if (VERB_P(V_EXAMINE)) {
+      msg ("The zorkmid is the unit of currency of the Great Underground Empire.")
+      return (true)
+    }
+    else if (VERB_P(V_FIND)) {
+      msg ("The best way to find zorkmids is to go out and look for them.")
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <object name="HANDS">
+    <inherit name="editor_object" />
+    <parent type="object">GLOBAL_OBJECTS</parent>
+    <LOC type="object">GLOBAL_OBJECTS</LOC>
+    <alias>pair of hands</alias>
+    <alt type="stringlist">
+      <value>bare hands</value>
+    </alt>
+    <scenery />
+    <SYNONYM>PAIR HANDS HAND</SYNONYM>
+    <ADJECTIVE>BARE</ADJECTIVE>
+    <FLAGS>NDESCBIT TOOLBIT</FLAGS>
+    <NDESCBIT />
+    <TOOLBIT />
+  </object>
+
+<!-- GLOBAL object used for ZIL globals -->
+  <object name="GLOBAL">
+    <inherit name="editor_object" />
+    <attr name="SCORE_MAX" type="int">350</attr>
+    <attr name="FALSE_FLAG" type="boolean">false</attr>
+    <attr name="CYCLOPS_FLAG" type="boolean">false</attr>
+    <DEFLATE type="boolean">false</DEFLATE>
+    <attr name="DOME_FLAG" type="boolean">false</attr>
+    <attr name="EMPTY_HANDED" type="boolean">false</attr>
+    <attr name="LLD_FLAG" type="boolean">false</attr>
+    <attr name="LOW_TIDE" type="boolean">false</attr>
+    <attr name="MAGIC_FLAG" type="boolean">false</attr>
+    <attr name="RAINBOW_FLAG" type="boolean">false</attr>
+    <attr name="TROLL_FLAG" type="boolean">false</attr>
+    <attr name="WON_FLAG" type="boolean">false</attr>
+    <attr name="COFFIN_CURE" type="boolean">false</attr>
+    <attr name="LOUD_FLAG" type="boolean">false</attr>
+    <attr name="EGG_SOLVE" type="boolean">false</attr>
+    <attr name="THIEF_HERE" type="boolean">false</attr>
+    <attr name="THIEF_ENGROSSED" type="boolean">false</attr>
+    <attr name="ROBBER_C_DESC">There is a suspicious-looking individual, holding a bag, leaning against one wall. He is armed with a vicious-looking stiletto.</attr>
+    <attr name="ROBBER_U_DESC">There is a suspicious-looking individual lying unconscious on the ground.</attr>
+    <LAMP_TABLE type="list">
+      <value type="string">100</value>
+      <value type="string">The lamp appears a bit dimmer.</value>
+      <value type="string">70</value>
+      <value type="string">The lamp is definitely dimmer now.</value>
+      <value type="string">15</value>
+      <value type="string">The lamp is nearly out.</value>
+      <value type="string">0</value>
+    </LAMP_TABLE>
+    <attr name="MATCH_COUNT" type="int">6</attr>
+    <CANDLE_TABLE type="list">
+      <value type="string">20</value>
+      <value type="string">The candles grow shorter.</value>
+      <value type="string">10</value>
+      <value type="string">The candles are becoming quite short.</value>
+      <value type="string">5</value>
+      <value type="string">The candles won't last long now.</value>
+      <value type="string">0</value>
+    </CANDLE_TABLE>
+    <attr name="LIGHT_SHAFT" type="int">13</attr>
+    <RIVER_SPEEDS type="list">
+      <value type="int">0</value>
+      <value type="object">RIVER_1</value>
+      <value type="int">4</value>
+      <value type="object">RIVER_2</value>
+      <value type="int">4</value>
+      <value type="object">RIVER_3</value>
+      <value type="int">3</value>
+      <value type="object">RIVER_4</value>
+      <value type="int">2</value>
+      <value type="object">RIVER_5</value>
+      <value type="int">1</value>
+    </RIVER_SPEEDS>
+    <RIVER_NEXT type="list">
+      <value type="int">0</value>
+      <value type="object">RIVER_1</value>
+      <value type="object">RIVER_2</value>
+      <value type="object">RIVER_3</value>
+      <value type="object">RIVER_4</value>
+      <value type="object">RIVER_5</value>
+    </RIVER_NEXT>
+    <RIVER_LAUNCH type="list">
+      <value type="int">0</value>
+      <value type="object">DAM_BASE</value>
+      <value type="object">RIVER_1</value>
+      <value type="object">WHITE_CLIFFS_NORTH</value>
+      <value type="object">RIVER_3</value>
+      <value type="object">WHITE_CLIFFS_SOUTH</value>
+      <value type="object">RIVER_4</value>
+      <value type="object">SHORE</value>
+      <value type="object">RIVER_5</value>
+      <value type="object">SANDY_BEACH</value>
+      <value type="object">RIVER_4</value>
+      <value type="object">RESERVOIR_SOUTH</value>
+      <value type="object">RESERVOIR</value>
+      <value type="object">RESERVOIR_NORTH</value>
+      <value type="object">RESERVOIR</value>
+      <value type="object">STREAM_VIEW</value>
+      <value type="object">IN_STREAM</value>
+    </RIVER_LAUNCH>
+    <BUOY_FLAG />
+    <attr name="BEACH_DIG" type="int">-1</attr>
+    <BDIGS type="stringlist">
+      <value>0</value>
+      <value>You seem to be digging a hole here.</value>
+      <value>The hole is getting deeper, but that's about it.</value>
+      <value>You are surrounded by a wall of sand on all sides.</value>
+    </BDIGS>
+    <attr name="SING_SONG" type="boolean">false</attr>
+    <SUPERBRIEF type="int">0</SUPERBRIEF>
+    <BRIEF type="int">1</BRIEF>
+    <VERBOSE />
+    <LOUD_RUNS type="list">
+      <value type="int">0</value>
+      <value type="object">DAMP_CAVE</value>
+      <value type="object">ROUND_ROOM</value>
+      <value type="object">DEEP_CANYON</value>
+    </LOUD_RUNS>
+    <DROWNINGS type="stringlist">
+      <value>0</value>
+      <value>up to your ankles.</value>
+      <value>up to your shin.</value>
+      <value>up to your knees.</value>
+      <value>up to your hips.</value>
+      <value>up to your waist.</value>
+      <value>up to your chest.</value>
+      <value>up to your neck.</value>
+      <value>over your head.</value>
+      <value>high in your lungs.</value>
+    </DROWNINGS>
+    <attr name="WATER_LEVEL" type="int">0</attr>
+    <CYCLOWRATH type="int">0</CYCLOWRATH>
+    <CYCLOMAD type="stringlist">
+      <value>0</value>
+      <value>The cyclops seems somewhat agitated.</value>
+      <value>The cyclops appears to be getting more agitated.</value>
+      <value>The cyclops is moving about the room, looking for something.</value>
+      <value>The cyclops was looking for salt and pepper. No doubt they are condiments for his upcoming snack.</value>
+      <value>The cyclops is moving toward you in an unfriendly manner.</value>
+      <value>You have two choices: 1. Leave  2. Become dinner.</value>
+    </CYCLOMAD>
+    <attr name="KITCHEN_WINDOW_FLAG" type="boolean">false</attr>
+    <DUMMY type="stringlist">
+      <value>0</value>
+      <value>Look around.</value>
+      <value>Too late for that.</value>
+      <value>Have your eyes checked.</value>
+    </DUMMY>
+    <attr name="BASE_SCORE" type="int">0</attr>
+    <SCORE type="int">0</SCORE>
+    <attr name="LOAD_MAX" type="int">100</attr>
+    <attr name="LOAD_ALLOWED" type="int">100</attr>
+    <CAGE_TOP />
+    <BAT_DROPS type="list">
+      <value type="object">MINE_1</value>
+      <value type="object">MINE_2</value>
+      <value type="object">MINE_3</value>
+      <value type="object">MINE_4</value>
+      <value type="object">LADDER_TOP</value>
+      <value type="object">LADDER_BOTTOM</value>
+      <value type="object">SQUEEKY_ROOM</value>
+      <value type="object">MINE_ENTRANCE</value>
+    </BAT_DROPS>
+    <attr name="RUG_MOVED" type="boolean">false</attr>
+    <attr name="GRATE_REVEALED" type="boolean">false</attr>
+    <GRUNLOCK type="boolean">false</GRUNLOCK>
+    <attr name="MIRROR_MUNG" type="boolean">false</attr>
+    <attr name="SUPER_BRIEF" type="boolean">false</attr>
+    <HS type="int">0</HS>
+    <JUMPLOSS type="stringlist">
+      <value>0</value>
+      <value>You should have looked before you leaped.</value>
+      <value>In the movies, your life would be passing before your eyes.</value>
+      <value>Geronimo...</value>
+    </JUMPLOSS>
+    <HO_HUM type="stringlist">
+      <value>0</value>
+      <value> doesn't seem to work.</value>
+      <value> isn't notably helpful.</value>
+      <value> has no effect.</value>
+    </HO_HUM>
+    <WHEEEEE type="stringlist">
+      <value>0</value>
+      <value>Very good. Now you can go to the second grade.</value>
+      <value>Are you enjoying yourself?</value>
+      <value>Wheeeeeeeeee!!!!!</value>
+      <value>Do you expect me to applaud?</value>
+    </WHEEEEE>
+    <LIT type="boolean">false</LIT>
+    <attr name="SPRAYED_P" type="boolean">false</attr>
+    <MOVES type="int">0</MOVES>
+    <DEAD type="boolean">false</DEAD>
+    <DEATHS type="int">0</DEATHS>
+    <LUCKY />
+    <attr name="EGYPT_FLAG" type="boolean">false</attr>
+    <XB type="boolean">false</XB>
+    <XC type="boolean">false</XC>
+    <attr name="GATE_FLAG" type="boolean">false</attr>
+    <attr name="GATES_OPEN" type="boolean">false</attr>
+    <attr name="FUMBLE_NUMBER" type="int">7</attr>
+    <attr name="FUMBLE_PROB" type="int">8</attr>
+    <REXIT type="int">0</REXIT>
+    <UEXIT type="int">1</UEXIT>
+    <NEXIT type="int">2</NEXIT>
+    <FEXIT type="int">3</FEXIT>
+    <CEXIT type="int">4</CEXIT>
+    <DEXIT type="int">5</DEXIT>
+    <NEXITSTR type="int">0</NEXITSTR>
+    <FEXITFCN type="int">0</FEXITFCN>
+    <CEXITFLAG type="int">1</CEXITFLAG>
+    <CEXITSTR type="int">1</CEXITSTR>
+    <DEXITOBJ type="int">1</DEXITOBJ>
+    <DEXITSTR type="int">1</DEXITSTR>
+    <INDENTS type="stringlist">
+      <value><![CDATA[<span></span>]]></value>
+      <value>{=Spaces(2)}</value>
+      <value>{=Spaces(4)}</value>
+      <value>{=Spaces(6)}</value>
+      <value>{=Spaces(8)}</value>
+      <value>{=Spaces(10)}</value>
+    </INDENTS>
+    <HELLOS type="stringlist">
+      <value>0</value>
+      <value>Hello.</value>
+      <value>Good day.</value>
+      <value>Nice weather we've been having lately.</value>
+      <value>Goodbye.</value>
+    </HELLOS>
+    <YUKS type="stringlist">
+      <value>0</value>
+      <value>A valiant attempt.</value>
+      <value>You can't be serious.</value>
+      <value>An interesting idea...</value>
+      <value>What a concept!</value>
+    </YUKS>
+    <F_BUSY_P type="int">1</F_BUSY_P>
+    <F_DEAD type="int">2</F_DEAD>
+    <F_UNCONSCIOUS type="int">3</F_UNCONSCIOUS>
+    <F_CONSCIOUS type="int">4</F_CONSCIOUS>
+    <F_FIRST_P type="int">5</F_FIRST_P>
+    <MISSED type="int">1</MISSED>
+    <UNCONSCIOUS type="int">2</UNCONSCIOUS>
+    <KILLED type="int">3</KILLED>
+    <LIGHT_WOUND type="int">4</LIGHT_WOUND>
+    <SERIOUS_WOUND type="int">5</SERIOUS_WOUND>
+    <STAGGER type="int">6</STAGGER>
+    <LOSE_WEAPON type="int">7</LOSE_WEAPON>
+    <HESITATE type="int">8</HESITATE>
+    <SITTING_DUCK type="int">9</SITTING_DUCK>
+    <DEF1 type="list">
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">2</value>
+      <value type="int">2</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+    </DEF1>
+    <DEF2A type="list">
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">2</value>
+    </DEF2A>
+    <DEF2B type="list">
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">2</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+      <value type="int">3</value>
+    </DEF2B>
+    <DEF3A type="list">
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">5</value>
+      <value type="int">5</value>
+    </DEF3A>
+    <DEF3B type="list">
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">5</value>
+      <value type="int">5</value>
+      <value type="int">5</value>
+    </DEF3B>
+    <DEF3C type="list">
+      <value type="int">1</value>
+      <value type="int">6</value>
+      <value type="int">6</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">4</value>
+      <value type="int">5</value>
+      <value type="int">5</value>
+      <value type="int">5</value>
+    </DEF3C>
+    <DEF1_RES type="list">
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">2</value>
+        <value type="int">2</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+      </value>
+      <value type="string">0</value>
+      <value type="string">0</value>
+    </DEF1_RES>
+    <DEF2_RES type="list">
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">2</value>
+      </value>
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">2</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+        <value type="int">3</value>
+      </value>
+      <value type="string">0</value>
+      <value type="string">0</value>
+    </DEF2_RES>
+    <DEF3_RES type="list">
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">5</value>
+        <value type="int">5</value>
+      </value>
+      <value type="string">0</value>
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">5</value>
+        <value type="int">5</value>
+        <value type="int">5</value>
+      </value>
+      <value type="int">0</value>
+      <value type="list">
+        <value type="int">1</value>
+        <value type="int">6</value>
+        <value type="int">6</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">4</value>
+        <value type="int">5</value>
+        <value type="int">5</value>
+        <value type="int">5</value>
+      </value>
+    </DEF3_RES>
+    <STRENGTH_MAX type="int">7</STRENGTH_MAX>
+    <STRENGTH_MIN type="int">2</STRENGTH_MIN>
+    <CURE_WAIT type="int">30</CURE_WAIT>
+    <F_WEP type="int">0</F_WEP>
+    <F_DEF type="int">1</F_DEF>
+    <HERO_MELEE type="list">
+      <value type="stringlist"> <!-- 0 -->
+        <value>0</value>
+        <value>Your F-WEP misses the F-DEF by an inch.</value>
+        <value>A good slash, but it misses the F-DEF by a mile.</value>
+        <value>You charge, but the F-DEF jumps nimbly aside.</value>
+        <value>Clang! Crash! The F-DEF parries.</value>
+        <value>A quick stroke, but the F-DEF is on guard.</value>
+        <value>A good stroke, but it's too slow; the F-DEF dodges.</value>
+      </value>
+      <value type="stringlist"> <!-- 1 -->
+        <value>0</value>
+        <value>Your F-WEP crashes down, knocking the F-DEF into dreamland.</value>
+        <value>The F-DEF is battered into unconsciousness.</value>
+        <value>A furious exchange, and the F-DEF is knocked out!</value>
+        <value>The haft of your F-WEP knocks out the F-DEF.</value>
+        <value>The F-DEF is knocked out!</value>
+      </value>
+      <value type="stringlist"> <!-- 2 -->
+        <value>0</value>
+        <value>It's curtains for the F-DEF as your F-WEP removes his head.</value>
+        <value>The fatal blow strikes the F-DEF square in the heart: He dies.</value>
+        <value>The F-DEF takes a fatal blow and slumps to the floor dead.</value>
+      </value>
+      <value type="stringlist"> <!-- 3 -->
+        <value>0</value>
+        <value>The F-DEF is struck on the arm; blood begins to trickle down.</value>
+        <value>Your F-WEP pinks the F-DEF on the wrist, but it's not serious.</value>
+        <value>Your stroke lands, but it was only the flat of the blade.</value>
+        <value>The blow lands, making a shallow gash in the F-DEF's arm!</value>
+      </value>
+      <value type="stringlist"> <!-- 4 -->
+        <value>0</value>
+        <value>The F-DEF receives a deep gash in his side.</value>
+        <value>A savage blow on the thigh! The F-DEF is stunned but can still fight!</value>
+        <value>Slash! Your blow lands! That one hit an artery, it could be serious!</value>
+        <value>Slash! Your stroke connects! This could be serious!</value>
+      </value>
+      <value type="stringlist"> <!-- 5 -->
+        <value>0</value>
+        <value>The F-DEF is staggered, and drops to his knees.</value>
+        <value>The F-DEF is momentarily disoriented and can't fight back.</value>
+        <value>The force of your blow knocks the F-DEF back, stunned.</value>
+        <value>The F-DEF is confused and can't fight back.</value>
+        <value>The quickness of your thrust knocks the F-DEF back, stunned.</value>
+      </value>
+      <value type="stringlist"> <!-- 6 -->
+        <value>0</value>
+        <value>The F-DEF's weapon is knocked to the floor, leaving him unarmed.</value>
+        <value>The F-DEF is disarmed by a subtle feint past his guard.</value>
+      </value>
+    </HERO_MELEE>
+    <CYCLOPS_MELEE type="list">
+      <value type="stringlist"> <!-- 0 -->
+        <value>0</value>
+        <value>The Cyclops misses, but the backwash almost knocks you over.</value>
+        <value>The Cyclops rushes you, but runs into the wall.</value>
+      </value>
+      <value type="stringlist"> <!-- 1 -->
+        <value>0</value>
+        <value>The Cyclops sends you crashing to the floor, unconscious.</value>
+      </value>
+      <value type="stringlist"> <!-- 2 -->
+        <value>0</value>
+        <value>The Cyclops breaks your neck with a massive smash.</value>
+      </value>
+      <value type="stringlist"> <!-- 3 -->
+        <value>0</value>
+        <value>A quick punch, but it was only a glancing blow.</value>
+        <value>A glancing blow from the Cyclops' fist.</value>
+      </value>
+      <value type="stringlist"> <!-- 4 -->
+        <value>0</value>
+        <value>The monster smashes his huge fist into your chest, breaking several ribs.</value>
+        <value>The Cyclops almost knocks the wind out of you with a quick punch.</value>
+      </value>
+      <value type="stringlist"> <!-- 5 -->
+        <value>0</value>
+        <value>The Cyclops lands a punch that knocks the wind out of you.</value>
+        <value>Heedless of your weapons, the Cyclops tosses you against the rock wall of the room.</value>
+      </value>
+      <value type="stringlist"> <!-- 6 -->
+        <value>0</value>
+        <value>The Cyclops grabs your F-WEP, tastes it, and throws it to the ground in disgust.</value>
+        <value>The monster grabs you on the wrist, squeezes, and you drop your F-WEP in pain.</value>
+      </value>
+      <value type="stringlist"> <!-- 7 -->
+        <value>0</value>
+        <value>The Cyclops seems unable to decide whether to broil or stew his dinner.</value>
+      </value>
+      <value type="stringlist"> <!-- 8 -->
+        <value>0</value>
+        <value>The Cyclops, no sportsman, dispatches his unconscious victim.</value>
+      </value>
+    </CYCLOPS_MELEE>
+    <TROLL_MELEE type="list">
+      <value type="stringlist"> <!-- 0 -->
+        <value>0</value>
+        <value>The troll swings his axe, but it misses.</value>
+        <value>The troll's axe barely misses your ear.</value>
+        <value>The axe sweeps past as you jump aside.</value>
+        <value>The axe crashes against the rock, throwing sparks!</value>
+      </value>
+      <value type="stringlist"> <!-- 1 -->
+        <value>0</value>
+        <value>The flat of the troll's axe hits you delicately on the head, knocking you out.</value>
+      </value>
+      <value type="stringlist"> <!-- 2 -->
+        <value>0</value>
+        <value>The troll neatly removes your head.</value>
+        <value>The troll's axe stroke cleaves you from the nave to the chops.</value>
+        <value>The troll's axe removes your head.</value>
+      </value>
+      <value type="stringlist"> <!-- 3 -->
+        <value>0</value>
+        <value>The axe gets you right in the side. Ouch!</value>
+        <value>The flat of the troll's axe skins across your forearm.</value>
+        <value>The troll's swing almost knocks you over as you barely parry in time.</value>
+        <value>The troll swings his axe, and it nicks your arm as you dodge.</value>
+      </value>
+      <value type="stringlist"> <!-- 4 -->
+        <value>0</value>
+        <value>The troll charges, and his axe slashes you on your F-WEP arm.</value>
+        <value>An axe stroke makes a deep wound in your leg.</value>
+        <value>The troll's axe swings down, gashing your shoulder.</value>
+      </value>
+      <value type="stringlist"> <!-- 5 -->
+        <value>0</value>
+        <value>The troll hits you with a glancing blow, and you are momentarily stunned.</value>
+        <value>The troll swings; the blade turns on your armor but crashes broadside into your head.</value>
+        <value>You stagger back under a hail of axe strokes.</value>
+        <value>The troll's mighty blow drops you to your knees.</value>
+      </value>
+      <value type="stringlist"> <!-- 6 -->
+        <value>0</value>
+        <value>The axe hits your F-WEP and knocks it spinning.</value>
+        <value>The troll swings, you parry, but the force of his blow knocks your F-WEP away.</value>
+        <value>The axe knocks your F-WEP out of your hand. It falls to the floor.</value>
+      </value>
+      <value type="stringlist"> <!-- 7 -->
+        <value>0</value>
+        <value>The troll hesitates, fingering his axe.</value>
+        <value>The troll scratches his head ruminatively:  Might you be magically protected, he wonders?</value>
+      </value>
+      <value type="stringlist"> <!-- 8 -->
+        <value>0</value>
+        <value>Conquering his fears, the troll puts you to death.</value>
+      </value>
+    </TROLL_MELEE>
+    <THIEF_MELEE type="list">
+      <value type="stringlist"> <!-- 0 -->
+        <value>0</value>
+        <value>The thief stabs nonchalantly with his stiletto and misses.</value>
+        <value>You dodge as the thief comes in low.</value>
+        <value>You parry a lightning thrust, and the thief salutes you with a grim nod.</value>
+        <value>The thief tries to sneak past your guard, but you twist away.</value>
+      </value>
+      <value type="stringlist"> <!-- 1 -->
+        <value>0</value>
+        <value>Shifting in the midst of a thrust, the thief knocks you unconscious with the haft of his stiletto.</value>
+        <value>The thief knocks you out.</value>
+      </value>
+      <value type="stringlist"> <!-- 2 -->
+        <value>0</value>
+        <value>Finishing you off, the thief inserts his blade into your heart.</value>
+        <value>The thief comes in from the side, feints, and inserts the blade into your ribs.</value>
+        <value>The thief bows formally, raises his stiletto, and with a wry grin, ends the battle and your life.</value>
+      </value>
+      <value type="stringlist"> <!-- 3 -->
+        <value>0</value>
+        <value>A quick thrust pinks your left arm, and blood starts to trickle down.</value>
+        <value>The thief draws blood, raking his stiletto across your arm.</value>
+        <value>The stiletto flashes faster than you can follow, and blood wells from your leg.</value>
+        <value>The thief slowly approaches, strikes like a snake, and leaves you wounded.</value>
+      </value>
+      <value type="stringlist"> <!-- 4 -->
+        <value>0</value>
+        <value>The thief strikes like a snake! The resulting wound is serious.</value>
+        <value>The thief stabs a deep cut in your upper arm.</value>
+        <value>The stiletto touches your forehead, and the blood obscures your vision.</value>
+        <value>The thief strikes at your wrist, and suddenly your grip is slippery with blood.</value>
+      </value>
+      <value type="stringlist"> <!-- 5 -->
+        <value>0</value>
+        <value>The butt of his stiletto cracks you on the skull, and you stagger back.</value>
+        <value>The thief rams the haft of his blade into your stomach, leaving you out of breath.</value>
+        <value>The thief attacks, and you fall back desperately.</value>
+      </value>
+      <value type="stringlist"> <!-- 6 -->
+        <value>0</value>
+        <value>A long, theatrical slash. You catch it on your F-WEP, but the thief twists his knife, and the F-WEP goes flying.</value>
+        <value>The thief neatly flips your F-WEP out of your hands, and it drops to the floor.</value>
+        <value>You parry a low thrust, and your F-WEP slips out of your hand.</value>
+      </value>
+      <value type="stringlist"> <!-- 7 -->
+        <value>0</value>
+        <value>The thief, a man of superior breeding, pauses for a moment to consider the propriety of finishing you off.</value>
+        <value>The thief amuses himself by searching your pockets.</value>
+        <value>The thief entertains himself by rifling your pack.</value>
+      </value>
+      <value type="stringlist"> <!-- 8 -->
+        <value>0</value>
+        <value>The thief, forgetting his essentially genteel upbringing, cuts your throat.</value>
+        <value>The thief, a pragmatist, dispatches you as a threat to his livelihood.</value>
+      </value>
+    </THIEF_MELEE>
+    <V_VILLAIN type="int">0</V_VILLAIN>
+    <V_BEST type="int">1</V_BEST>
+    <V_BEST_ADV type="int">2</V_BEST_ADV>
+    <V_PROB type="int">3</V_PROB>
+    <V_MSGS type="int">4</V_MSGS>
+    <VILLAINS type="list">
+      <value type="int">0</value>
+      <value type="list">
+        <value type="object">TROLL</value>
+        <value type="object">SWORD</value>
+        <value type="int">1</value>
+        <value type="int">0</value>
+        <value type="list"> <!-- TROLL_MELEE -->
+          <value type="stringlist">
+            <value>0</value>
+            <value>The troll swings his axe, but it misses.</value>
+            <value>The troll's axe barely misses your ear.</value>
+            <value>The axe sweeps past as you jump aside.</value>
+            <value>The axe crashes against the rock, throwing sparks!</value> 
+          </value>
+          <value type="stringlist">
+            <value>0</value> // 
+            <value>The flat of the troll's axe hits you delicately on the head, knocking you out.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The troll neatly removes your head.</value>
+            <value>The troll's axe stroke cleaves you from the nave to the chops.</value>
+            <value>The troll's axe removes your head.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The axe gets you right in the side. Ouch!</value>
+            <value>The flat of the troll's axe skins across your forearm.</value>
+            <value>The troll's swing almost knocks you over as you barely parry in time.</value>
+            <value>The troll swings his axe, and it nicks your arm as you dodge.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The troll charges, and his axe slashes you on your F-WEP arm.</value>
+            <value>An axe stroke makes a deep wound in your leg.</value>
+            <value>The troll's axe swings down, gashing your shoulder.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The troll hits you with a glancing blow, and you are momentarily stunned.</value>
+            <value>The troll swings; the blade turns on your armor but crashes broadside into your head.</value>
+            <value>You stagger back under a hail of axe strokes.</value>
+            <value>The troll's mighty blow drops you to your knees.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The axe hits your F-WEP and knocks it spinning.</value>
+            <value>The troll swings, you parry, but the force of his blow knocks your F-WEP away.</value>
+            <value>The axe knocks your F-WEP out of your hand. It falls to the floor.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The troll hesitates, fingering his axe.</value>
+            <value>The troll scratches his head ruminatively:  Might you be magically protected, he wonders?</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>Conquering his fears, the troll puts you to death.</value>
+          </value>
+        </value>
+      </value>
+      <value type="list">
+        <value type="object">THIEF</value>
+        <value type="object">KNIFE</value>
+        <value type="int">1</value>
+        <value type="int">0</value>
+        <value type="list"> <!-- THIEF_MELEE -->
+          <value type="stringlist">
+            <value>0</value>
+            <value>The thief stabs nonchalantly with his stiletto and misses.</value>
+            <value>You dodge as the thief comes in low.</value>
+            <value>You parry a lightning thrust, and the thief salutes you with a grim nod.</value>
+            <value>The thief tries to sneak past your guard, but you twist away.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>Shifting in the midst of a thrust, the thief knocks you unconscious with the haft of his stiletto.</value>
+            <value>The thief knocks you out.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>Finishing you off, the thief inserts his blade into your heart.</value>
+            <value>The thief comes in from the side, feints, and inserts the blade into your ribs.</value>
+            <value>The thief bows formally, raises his stiletto, and with a wry grin, ends the battle and your life.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>A quick thrust pinks your left arm, and blood starts to trickle down.</value>
+            <value>The thief draws blood, raking his stiletto across your arm.</value>
+            <value>The stiletto flashes faster than you can follow, and blood wells from your leg.</value>
+            <value>The thief slowly approaches, strikes like a snake, and leaves you wounded.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The thief strikes like a snake! The resulting wound is serious.</value>
+            <value>The thief stabs a deep cut in your upper arm.</value>
+            <value>The stiletto touches your forehead, and the blood obscures your vision.</value>
+            <value>The thief strikes at your wrist, and suddenly your grip is slippery with blood.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The butt of his stiletto cracks you on the skull, and you stagger back.</value>
+            <value>The thief rams the haft of his blade into your stomach, leaving you out of breath.</value>
+            <value>The thief attacks, and you fall back desperately.</value>
+          </value>
+          <value type="stringlist"> 
+            <value>0</value>
+            <value>A long, theatrical slash. You catch it on your F-WEP, but the thief twists his knife, and the F-WEP goes flying.</value>
+            <value>The thief neatly flips your F-WEP out of your hands, and it drops to the floor.</value>
+            <value>You parry a low thrust, and your F-WEP slips out of your hand.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The thief, a man of superior breeding, pauses for a moment to consider the propriety of finishing you off.</value>
+            <value>The thief amuses himself by searching your pockets.</value>
+            <value>The thief entertains himself by rifling your pack.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The thief, forgetting his essentially genteel upbringing, cuts your throat.</value>
+            <value>The thief, a pragmatist, dispatches you as a threat to his livelihood.</value>
+          </value>
+        </value>
+      </value>
+      <value type="list">
+        <value type="object">CYCLOPS</value>
+        <value type="object">NOTHING</value>
+        <value type="int">1</value>
+        <value type="int">0</value>
+        <value type="list"> <!-- CYCLOPS_MELEE -->
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops misses, but the backwash almost knocks you over.</value>
+            <value>The Cyclops rushes you, but runs into the wall.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops sends you crashing to the floor, unconscious.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops breaks your neck with a massive smash.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>A quick punch, but it was only a glancing blow.</value>
+            <value>A glancing blow from the Cyclops' fist.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The monster smashes his huge fist into your chest, breaking several ribs.</value>
+            <value>The Cyclops almost knocks the wind out of you with a quick punch.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops lands a punch that knocks the wind out of you.</value>
+            <value>Heedless of your weapons, the Cyclops tosses you against the rock wall of the room.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops grabs your F-WEP, tastes it, and throws it to the ground in disgust.</value>
+            <value>The monster grabs you on the wrist, squeezes, and you drop your F-WEP in pain.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops seems unable to decide whether to broil or stew his dinner.</value>
+          </value>
+          <value type="stringlist">
+            <value>0</value>
+            <value>The Cyclops, no sportsman, dispatches his unconscious victim.</value>
+          </value>
+        </value>
+      </value>
+    </VILLAINS>
+    <attr name="P_CONT" type="int">0</attr>
+    <attr name="DESC_OBJECT" type="object">NOTHING</attr>
+    <changedLIT type="script">
+      dark_p = CheckDarkness()
+      GLOBAL.LIT = LIT_P(GLOBAL.HERE)
+    </changedLIT>
+    <attr name="changedP_CONT" type="script"><![CDATA[
+      if (GLOBAL.P_CONT < 1) {
+        // TODO - I think this is right =)
+        game.pov.commandqueue = null
+      }
+    ]]></attr>
+    <C_ENABLED_P type="int">0</C_ENABLED_P>
+    <C_ENABLED type="int">1</C_ENABLED>
+    <HOUSE_AROUND type="list">
+      <value type="object">WEST_OF_HOUSE</value>
+      <value type="object">NORTH_OF_HOUSE</value>
+      <value type="object">EAST_OF_HOUSE</value>
+      <value type="object">SOUTH_OF_HOUSE</value>
+      <value type="object">WEST_OF_HOUSE</value>
+    </HOUSE_AROUND>
+    <FOREST_AROUND type="list">
+      <value type="object">FOREST_1</value>
+      <value type="object">FOREST_2</value>
+      <value type="object">FOREST_3</value>
+      <value type="object">PATH</value>
+      <value type="object">CLEARING</value>
+      <value type="object">FOREST_1</value>
+    </FOREST_AROUND>
+    <IN_HOUSE_AROUND type="list">
+      <value type="object">LIVING_ROOM</value>
+      <value type="object">KITCHEN</value>
+      <value type="object">ATTIC</value>
+      <value type="object">KITCHEN</value>
+    </IN_HOUSE_AROUND>
+    <ABOVE_GROUND type="list">
+      <value type="object">WEST_OF_HOUSE</value>
+      <value type="object">NORTH_OF_HOUSE</value>
+      <value type="object">EAST_OF_HOUSE</value>
+      <value type="object">SOUTH_OF_HOUSE</value>
+      <value type="object">FOREST_1</value>
+      <value type="object">FOREST_2</value>
+      <value type="object">FOREST_3</value>
+      <value type="object">PATH</value>
+      <value type="object">CLEARING</value>
+      <value type="object">GRATING_CLEARING</value>
+      <value type="object">CANYON_VIEW</value>
+    </ABOVE_GROUND>
+  </object>
+
+</library>

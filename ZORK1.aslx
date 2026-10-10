@@ -1,0 +1,494 @@
+<!--Saved by Quest Viva 6.0.0-->
+<asl version="600">
+  <include ref="English.aslx" />
+  <include ref="Core.aslx" />
+  <include ref="z1commands.aslx" />
+  <include ref="z1dungeon.aslx" />
+  <include ref="z1actions.aslx" />
+  <include ref="z1notZIL.aslx" />
+  <include ref="z1HACKED.aslx" />
+  <include ref="z1Miscellaneous.aslx" />
+  <include ref="z1ParserAddons.aslx" />
+  <include ref="z1globals.aslx" />
+  <game name="ZORK I: The Great Underground Empire">
+    <gameid>qcode-z1-0-261007-qviva600</gameid>
+    <version>0</version>
+    <release type="int">0</release>
+    <serial type="int">261007</serial>
+    <firstpublished>2026</firstpublished>
+    <debugging type="boolean">false</debugging>
+    <attr name="debug_fighting" type="boolean">false</attr>
+    <subtitle>Infocom interactive fiction - a fantasy story</subtitle>
+    <description><![CDATA[by Marc Blank and Dave Lebling<br/>Infocom interactive fiction - a fantasy story<br/>Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.<br/>ZORK is a registered trademark of Infocom, Inc.<br/>MIT License - Copyright (c) 2025 Microsoft<br/>2026  Quest Viva port by KV<br/><br/>Manual:<br/>https://infodoc.plover.net/manuals/zork1.pdf<br/><br/>Map:<br/>https://eblong.com/infocom/maps/zork-1-map-ZUG-1982.jpeg<br/><br/>InvisiClues (hints):<br/>https://dfabulich.github.io/infocom-hints-html/zork-i-the-great-underground-empire.html<br/><br/>Walkthrough:<br/>http://www.eristic.net/games/infocom/zork1.html  ]]></description>
+    <author>Marc Blank and Dave Lebling</author>
+    <category>Fantasy</category>
+    <showtitle type="boolean">false</showtitle>
+    <attr name="feature_lightdark" type="boolean">true</attr>
+    <attr name="feature_advancedscripts" type="boolean">true</attr>
+    <donotclearmenus />
+    <showmenuresponses />
+    <multiplecommands />
+    <attr name="changeroom_newline" type="boolean">false</attr>
+    <enablehyperlinks type="boolean">false</enablehyperlinks>
+    <showdescriptiononenter type="boolean">false</showdescriptiononenter>
+    <autodescription type="boolean">false</autodescription>
+    <showpanes type="boolean">false</showpanes>
+    <turnoffsavebutton />
+    <classiclocation />
+    <customlocationcolour>Black</customlocationcolour>
+    <customlocationtextcolour>White</customlocationtextcolour>
+    <borderlesscursor type="boolean">false</borderlesscursor>
+    <cover>z1Cover.png</cover>
+    <defaultforeground>Black</defaultforeground>
+    <defaultbackground>White</defaultbackground>
+    <customlocationbordercolour>Black</customlocationbordercolour>
+    <marginscolour type="string"></marginscolour>
+    <publishfileextensions>*.jpg;*.jpeg;*.png;*.gif;*.js;*.wav;*.mp3;*.htm;*.html;*.svg;*.zip</publishfileextensions>
+    <pov type="object">ADVENTURER</pov>
+    <start type="script">
+      PreGO
+      GO
+      BuildGrammarLists
+    </start>
+    <scopebackdrop type="script">
+      AddGlobalObjectsToScope (items)
+    </scopebackdrop>
+    <inituserinterface type="script">
+      RemoveTypeHereLabel
+      FixContinueLink
+    </inituserinterface>
+    <unresolvedcommandhandler type="script">
+      UnresolvedCommandHandlerF (command)
+    </unresolvedcommandhandler>
+    <versioncode type="int">7</versioncode>
+  </game>
+  <command name="V_READ">
+    <pattern type="string"><![CDATA[^(LOOK|L|STARE|GAZE) AT (?<object1>.*) WITH (?<object2>.*)$|^(READ|SKIM) (?<object1>.*)(| WITH) (?<object2>.*)$|^(READ|SKIM)(| FROM) (?<object1>.*)$]]></pattern>
+    <attr name="SCOPE_PRSO">HELD CARRIED ON_GROUND IN_ROOM TAKE</attr>
+    <scope>HELD;CARRIED;ON_GROUND;IN_ROOM</scope>
+    <attr name="FIND_PRSO">READBIT</attr>
+    <SYNONYM>LOOL L STARE GAZE READ SKIM</SYNONYM>
+    <SYNTAX type="stringlist">
+      <value>LOOK AT OBJECT (HELD CARRIED ON-GROUND IN-ROOM) WITH OBJECT</value>
+      <value>READ OBJECT (FIND READBIT) (HELD CARRIED ON-GROUND IN-ROOM TAKE)</value>
+      <value>READ FROM OBJECT (FIND READBIT) (HELD CARRIED ON-GROUND IN-ROOM TAKE)</value>
+      <value>READ OBJECT (FIND READBIT) (HELD CARRIED ON-GROUND IN-ROOM TAKE) WITH OBJECT</value>
+    </SYNTAX>
+    <script>
+      if (not PRE_READ()) {
+        if (not FSET_P(GLOBAL.PRSO, "READBIT")) {
+          msg ("How does one read a " + GLOBAL.PRSO.alias + "?")
+        }
+        else {
+          msg (GLOBAL.PRSO.TEXT)
+        }
+      }
+    </script>
+  </command>
+  <object name="room">
+    <inherit name="editor_object" />
+    <alias>unusedobject</alias>
+    <object name="player">
+      <inherit name="editor_object" />
+      <inherit name="editor_player" />
+      <visible type="boolean">false</visible>
+      <alias>unusedobject</alias>
+      <changedparent type="script">
+        GLOBAL.HERE = this.parent
+        if (game.pov = this) {
+          if (IsDefined("oldvalue")) {
+            OnEnterRoom (oldvalue)
+          }
+          else {
+            OnEnterRoom (null)
+          }
+          if (game.gridmap) {
+            MergePOVCoordinates
+          }
+        }
+        this.hasbeenmoved = true
+      </changedparent>
+    </object>
+  </object>
+  <walkthrough name="eristic">
+    <steps type="simplestringlist">
+      delay:50
+      open mailbox
+      get leaflet
+      read it
+      drop it
+      n
+      n
+      climb tree
+      get egg
+      d
+      open egg
+      s
+      e
+      open window
+      in
+      take all
+      open brown sack
+      west
+      take all
+      move rug
+      open trap door
+      light
+      down
+      drop jewel-encrusted egg
+      #random 187
+      n
+      attack troll with sword
+      g
+      drop sword
+      w
+      w
+      w
+      u
+      get coins and key
+      sw
+      e
+      s
+      se
+      odysseus
+      e
+      e
+      open case
+      put coins in case
+      drop lunch, bottle, and key
+      open trap
+      d
+      s
+      e
+      get painting
+      w
+      n
+      u
+      put painting in case
+      d
+      n
+      e
+      e
+      e.jump
+      echo
+      get bar
+      w
+      w
+      w
+      s
+      u
+      put bar in case
+      d
+      n
+      e
+      e
+      e
+      u
+      e
+      n
+      get matchbook
+      n
+      get wrench and screwdriver
+      push yellow
+      s
+      s
+      turn bolt with wrench
+      drop wrench
+      w
+      z
+      z
+      n
+      get trunk
+      s
+      sw
+      sw
+      w
+      s
+      u
+      put trunk in case
+      d
+      n
+      e
+      n
+      ne
+      n
+      n
+      get air pump
+      n
+      get trident
+      u
+      n
+      n
+      w
+      d
+      u
+      put trident in case
+      e
+      u
+      get rope
+      d
+      w
+      d
+      n
+      e
+      e
+      se
+      e
+      tie rope to railing
+      d
+      get torch
+      turn off lamp
+      s
+      drop sack, lantern, pump, matchbook, and screwdriver
+      e
+      get coffin
+      open it
+      take sceptre
+      w
+      s
+      pray
+      e
+      s
+      e
+      in
+      w
+      put coffin and sceptre in case
+      d
+      n
+      e
+      e
+      se
+      e
+      d
+      s
+      get matchbook and bell
+      open matchbook
+      s
+      get candles and black book
+      put out candles
+      d
+      d
+      ring bell
+      get candles
+      light match
+      light candles
+      read book
+      turn off candles
+      drop book
+      s
+      get skull
+      n
+      u
+      n
+      n
+      n
+      w
+      w
+      s
+      u
+      put skull in case
+      get sceptre
+      d
+      n
+      e
+      e
+      se
+      e
+      d
+      s
+      get sack, lamp, pump, and screwdriver
+      s
+      d
+      n
+      n
+      n
+      e
+      u
+      e
+      e
+      inflate plastic with pump
+      drop pump
+      put screwdriver and sceptre in sack
+      get label
+      drop it
+      enter boat
+      launch it
+      z
+      z
+      z
+      z
+      get buoy
+      east
+      exit boat
+      open buoy
+      drop buoy
+      get emerald
+      get shovel
+      ne
+      sw
+      ne
+      dig sand with shovel
+      dig sand with shovel
+      dig sand with shovel
+      dig sand with shovel
+      drop shovel
+      get scarab
+      sw
+      s
+      s
+      wave sceptre
+      w
+      w
+      sw
+      u
+      u
+      nw
+      w
+      w
+      w
+      put scarab, emerald, and sceptre in case
+      e
+      e
+      e
+      e
+      d
+      d
+      n
+      get pot
+      sw
+      u
+      u
+      nw
+      w
+      w
+      w
+      put pot in case
+      get garlic
+      d
+      n
+      e
+      e
+      s
+      s
+      touch mirror
+      n
+      w
+      n
+      w
+      n
+      get jade
+      e
+      put candles and screwdriver in basket
+      drop torch
+      turn on lantern
+      n
+      d
+      get bracelet
+      e
+      ne
+      se
+      sw
+      d
+      d
+      s
+      get coal
+      n
+      u
+      u
+      n
+      e
+      s
+      n
+      u
+      s
+      put coal in basket
+      get candles
+      light match
+      light candles
+      put candles in basket
+      lower basket
+      n
+      d
+      e
+      ne
+      se
+      sw
+      d
+      d
+      w
+      drop sack, garlic, lamp, matchbook, jade, and bracelet
+      w
+      get coal, screwdriver, and candles
+      s
+      l
+      open machine
+      put coal in machine
+      close machine
+      turn switch with screwdriver
+      open machine
+      get diamond
+      drop screwdriver
+      n
+      put candles and diamond in basket
+      e
+      get all but timber
+      e
+      u
+      u
+      n
+      e
+      s
+      n
+      u
+      s
+      raise basket
+      take diamond and candles
+      turn off candles
+      w
+      s
+      e
+      s
+      d
+      u
+      put diamond, bracelet, and jade in case
+      drop garlic and candles
+      e
+      u
+      get knife
+      d
+      w
+      w
+      w
+      u
+      ATTACK THIEF WITH KNIFE
+      #RANDOM 47
+      attack thief with knife
+      take chalice, pot, egg, and torch
+      d
+      e
+      e
+      put chalice and pot in case
+      get canary
+      put egg in case
+      e
+      e
+      n
+      n
+      wind canary
+      get bauble
+      s
+      e
+      w
+      w
+      put canary, bauble, and torch in case
+      get parchment
+      examine parchment
+      e
+      e
+      s
+      w
+      sw
+      w
+    </steps>
+  </walkthrough>
+</asl>

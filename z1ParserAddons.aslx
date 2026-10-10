@@ -1,0 +1,747 @@
+<?xml version="1.0"?>
+<!--
+  Parser Add-Ons
+                for ZORK 1
+-->
+<library>
+
+  <function name="EvalToBoolean" parameters="str" type="boolean">
+    dLog ("[EvalToBoolean]")
+    // dLog ("[EvalToBoolean] str: " + str)
+    pippo = Eval(str)
+    if (TypeOf(pippo) = "boolean") {
+      dLog ("[EvalToBoolean] returning " + pippo)
+      return (pippo)
+    }
+    dLog ("[EvalToBoolean] failed to return boolean!")
+    error ("EvalToBoolean attempted to return value type: " + TypeOf(pippo))
+  </function>
+
+  <function name="PERFORM_COMMAND" parameters="cmd, script, argsdict"><![CDATA[
+    dLog ("[PERFORM_COMMAND]...")
+    HANDLED_BY_ACTION = false
+    GLOBAL.PRSO = NOTHING
+    GLOBAL.PRSI = NOTHING
+    GLOBAL.PRSO_TEXT = "undefined"
+    GLOBAL.PRSO_DIR = "undefined"
+    GLOBAL.PRSA = cmd
+    isallbut = false
+    if ("object1" in argsdict) {
+      GLOBAL.PRSO = DictionaryItem(argsdict,"object1")
+    }
+    if (GetBoolean (game.pov, "currentcommandallbut")) {
+      dLog ("ALL_BUT")
+      onlytake = false
+      isallbut = true
+      items = NewObjectList()
+      if (HasString(GLOBAL.PRSA, "SCOPE_PRSO")) {
+        dLog ("CHECKING SCOPE...")
+        scoping = GetAttribute(GLOBAL.PRSA,"SCOPE_PRSO")
+        onlytake = false
+        foreach (partscope, Split(scoping, " ")) {
+          if (partscope = "TAKE" or GLOBAL.PRSA = V_TAKE) {
+            onlytake = true
+          }
+          switch (partscope) {
+            case ("inventory","INVENTORY","HAVE") {
+              to_add = ScopeInventory()
+              items = ListCombine(items, to_add)
+            }
+            case ("CARRIED") {
+              foreach (cont, FilterByAttribute(FilterByType(ScopeInventory(), "container_base"),"OPENBIT")) {
+                to_add = GetAllChildObjects(cont)
+                items = ListCombine(items, to_add)
+              }
+            }
+            case ("HELD") {
+              to_add = GetDirectChildren(game.pov)
+              items = ListCombine(items, to_add)
+            }
+            case ("notheld","room","NOTHELD") {
+              to_add = ScopeReachableNotHeld() - game.pov
+              items = ListCombine(items, to_add)
+            }
+            case ("all") {
+              to_add = ScopeReachable() - game.pov
+              items = ListCombine(items, to_add)
+            }
+            case ("container") {
+              to_add = FilterByType(ScopeVisible(), "container_base")
+              items = ListCombine(items, to_add)
+            }
+            case ("contents", "IN_ROOM") {
+              foreach (cont, FilterByAttribute(FilterByType(ScopeVisible(), "container_base"),"OPENBIT")) {
+                to_add = GetAllChildObjects(cont)
+                items = ListCombine(items, to_add)
+              }
+            }
+            case ("ON_GROUND") {
+              to_add = FilterByAttribute(ScopeReachableForRoom(game.pov.parent) - game.pov, "parent", game.pov.parent)
+              items = ListCombine(items, to_add)
+            }
+            case ("world") {
+              to_add = AllObjects() - game.pov
+              items = ListCombine(items, to_add)
+            }
+            case ("none") {
+            }
+            default {
+              // The command's "scope" can be the name of an object, or an attribute of the player's parent
+              obj = GetObject(partscope)
+              if (not obj = null) {
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              if (HasObject(game.pov.parent, partscope)) {
+                obj = GetAttribute(game.pov.parent, partscope)
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              else if (HasAttribute(game.pov.parent, partscope)) {
+                attr = GetAttribute(game.pov.parent, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+              else if (HasAttribute(game.pov, partscope)) {
+                attr = GetAttribute(game.pov, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+            }
+          }
+        }
+      }
+      else {
+        items = ScopeVisible()
+      }
+      dLog ("[PERFORM_COMMAND] items: " +items)
+      candidates = ListExclude(items,GLOBAL.PRSO)
+      if (onlytake) {
+        candidates = FilterByAttribute(candidates,"TAKEBIT")
+      }
+      dLog ("[PERFORM_COMMAND] candidates: " + candidates)
+      //
+      if (ListCount(candidates) < 1) {
+        msg ("But that's everything!")
+        RFATAL
+        return (false)
+      }
+      GLOBAL.PRSO = candidates
+    }
+    game.pov.currentcommandallbut = false
+    dLog ("[PERFORM_COMMAND] PRSO: " + GLOBAL.PRSO)
+    if ("object2" in argsdict) {
+      GLOBAL.PRSI = DictionaryItem(argsdict,"object2")
+    }
+    dLog ("[PERFORM_COMMAND] PRSI: " + GLOBAL.PRSI)
+    if ("text" in argsdict) {
+      GLOBAL.PRSO_TEXT = DictionaryItem(argsdict,"text")
+    }
+    dLog ("[PERFORM_COMMAND] PRSO_TEXT: " + GLOBAL.PRSO_TEXT)
+    if ("exit" in argsdict) {
+      GLOBAL.PRSO_DIR = DictionaryItem(argsdict,"exit")
+      GLOBAL.PRSO_DIR = GLOBAL.PRSO_DIR.alias
+    }
+    dLog ("[PERFORM_COMMAND] PRSO_DIR: " + GLOBAL.PRSO_DIR)
+    GLOBAL.PRSO_MULTI = false
+    if (DictionaryContains(argsdict,"multiple")){
+      GLOBAL.PRSO_MULTI = DictionaryItem(argsdict,"multiple")
+    }
+    dLog ("[PERFORM_COMMAND] cmd = " + cmd.name)
+    dLog ("[PERFORM_COMMAND] multiple? " + GLOBAL.PRSO_MULTI)
+    // Check for lack of PRSO or PRSI and FIND attributes
+    FIND_GRIND
+    // End of FIND stuff
+    if (TypeOf(GLOBAL.PRSI) = "objectlist") {
+      prsi_len = ListCount(GLOBAL.PRSI)
+      if (prsi_len = 1) {
+        GLOBAL.PRSI = ListItem(GLOBAL.PRSI,0)
+      }
+      else if (prsi_len > 1) {
+        msg ("You can't use multiple indirect objects.")
+        return (false)
+      }
+      else {
+        error ("[PERFORM_COMMAND] " + GLOBAL.PRSA.name + ": PRSI is null!")
+      }
+    }
+    if (TypeOf(GLOBAL.PRSO) = "objectlist") {
+      dLog ("[PERFORM_COMMAND] PRSO is an object list: " + GLOBAL.PRSO)
+      PRSO_BAK = ListExclude(GLOBAL.PRSO, player)
+      PRSO_LIST = ListExclude(PRSO_BAK, player)
+      if (DictionaryContains(game.pov.currentcommandvarlist,"object1")) {
+        thisprso = DictionaryItem(game.pov.currentcommandvarlist,"object1")
+        if (thisprso = "all") {
+          isall = true
+          if (ListCount(GLOBAL.PRSO) = 0){
+            msg ("There is nothing at all available!")
+            RFATAL
+            return (null)
+          }
+        }
+      }
+      foreach (o, PRSO_BAK) {
+        // if (not HANDLED_BY_ACTION) {
+          THIS_IS_IT (o)
+          isall = false
+          
+          if (ListCount(GLOBAL.PRSO) > 1 or isall or isallbut) {
+            TELL (o.alias + ": ")
+          }
+          GLOBAL.PRSO = o
+          dLog ("[PERFORM_COMMAND] PRSO: " + GLOBAL.PRSO)
+          dLog ("[PERFORM_COMMAND] checking if " + GLOBAL.PRSO + " has TAKE in its scope...")
+          if (ListContains(Split(GLOBAL.PRSA.SCOPE_PRSO),"TAKE")) {
+            if (FSET_P(o,"TAKEBIT") and not FSET_P(o,"TRYTAKEBIT")) {
+              if (not ListContains(ScopeInventory(),o)) {
+                dLog ("[PERFORM_COMMAND] QUEUE IMPLICIT_TAKE FOR " + o.alias)
+                msg ("(first taking the " + o.alias + ")")
+                // game.OUTPUT_OFF = true
+                prso = GLOBAL.PRSO
+                prsa = GLOBAL.PRSA
+                queue = game.pov.commandqueue
+                game.pov.commandqueue = null
+                HandleSingleCommand ("take " + GLOBAL.PRSO.alias)
+                GLOBAL.PRSA = prsa
+                GLOBAL.PRSO = prso
+                game.pov.commandqueue = queue
+                // game.OUTPUT_OFF = false
+                if (not ListContains(ScopeInventory(),o)) {
+                  msg ("You don't have that.")
+                  RFATAL
+                  HANDLED_BY_ACTION = true
+                  dLog ("[PERFORM_COMMAND] Could not implicitly take " + o.alias)
+                }
+              }
+            }
+          }
+          dLog ("[PERFORM_COMMAND] calling PERFORM_COMMAND_HANDLER...")
+          HANDLED_BY_ACTION = PERFORM_COMMAND_HANDLER(cmd, script, argsdict)
+          dLog ("[PERFORM_COMMAND] HANDLED_BY_ACTION = " + HANDLED_BY_ACTION)
+          GLOBAL.PRSO = PRSO_BAK
+          // }
+      }
+    }
+    else {
+      dLog ("[PERFORM_COMMAND] PRSO is a single object...")
+      if (HasAttribute (GLOBAL.PRSA, "SCOPE_PRSO")) {
+        dLog ("[PERFORM_COMMAND] checking if " + GLOBAL.PRSO + " has TAKE in its scope...")
+        if (ListContains(Split(GLOBAL.PRSA.SCOPE_PRSO, " "),"TAKE")) {
+          if (FSET_P(GLOBAL.PRSO,"TAKEBIT") and not FSET_P(GLOBAL.PRSO,"TRYTAKEBIT")) {
+            if (not ListContains(ScopeInventory(),GLOBAL.PRSO)) {
+              dLog ("[PERFORM_COMMAND] QUEUE IMPLICIT_TAKE FOR " + GLOBAL.PRSO.alias)
+              msg ("(first taking the " + GLOBAL.PRSO.alias + ")")
+              // game.OUTPUT_OFF = true
+              prso = GLOBAL.PRSO
+              prsa = GLOBAL.PRSA
+              queue = game.pov.commandqueue
+              game.pov.commandqueue = null
+              HandleSingleCommand ("take " + GLOBAL.PRSO.alias)
+              GLOBAL.PRSA = prsa
+              GLOBAL.PRSO = prso
+              game.pov.commandqueue = queue
+              // game.OUTPUT_OFF = false
+              if (not ListContains(ScopeInventory(),GLOBAL.PRSO)) {
+                msg ("You don't have that.")
+                RFATAL
+                HANDLED_BY_ACTION = true
+                dLog ("[PERFORM_COMMAND] Could not implicitly take " + GLOBAL.PRSO.alias)
+              }
+            }
+          }
+        }
+      }
+      dLog ("[PERFORM_COMMAND] calling " + GLOBAL.PRSO + "'s ACTION function...")
+      if (not HANDLED_BY_ACTION) {
+        HANDLED_BY_ACTION = PERFORM_COMMAND_HANDLER(cmd, script, argsdict)
+        dLog ("[PERFORM_COMMAND] HANDLED_BY_ACTION = " + HANDLED_BY_ACTION)
+      }
+    }
+    dLog ("[PERFORM_COMMAND] Check M_END ACTION for " + GLOBAL.HERE.name)
+    if (HasAttribute (GLOBAL.HERE, "ACTION")) {
+      pippo = Eval(GLOBAL.HERE.ACTION + "(\"M_END\")")
+    }
+  ]]></function>
+
+  <function name="PERFORM_COMMAND_HANDLER" parameters="cmd, script, argsdict" type="boolean">
+    dLog ("[PERFORM_COMMAND_HANDLER]...")
+    HANDLED_BY_ACTION = false
+    cmd = GLOBAL.PRSA
+    dLog ("[PERFORM_COMMAND_HANDLER] cmd = " + cmd.name)
+    dLog ("[PERFORM_COMMAND_HANDLER] Check M_BEG ACTION for " + GLOBAL.HERE.name)
+    // If in a vehicle, run its M_BEG first
+    if (not GLOBAL.HERE = LOC(GLOBAL.WINNER) and HasAttribute (LOC(GLOBAL.WINNER), "ACTION")) {
+      HANDLED_BY_ACTION = Eval(GetAttribute(LOC(GLOBAL.WINNER),"ACTION") + "(\"M_BEG\")")
+      if (HANDLED_BY_ACTION) {
+        dLog ("[PERFORM_COMMAND_HANDLER] Overidden by room M_BEG!")
+      }
+    }
+    // if still not handled, run the room's M_BEG
+    if (not HANDLED_BY_ACTION and HasAttribute (GLOBAL.HERE, "ACTION")) {
+      if (HasAttribute(GLOBAL.HERE,"ACTION")) {
+        HANDLED_BY_ACTION = EvalToBoolean(GLOBAL.HERE.ACTION + "(\"M_BEG\")")
+        if (HANDLED_BY_ACTION) {
+          dLog ("[PERFORM_COMMAND_HANDLER] Overidden by room M_BEG!")
+        }
+      }
+    }
+    // if still not handled, run the PRSI's ACTION, if applicable
+    if (not HANDLED_BY_ACTION and not GLOBAL.PRSI = NOTHING) {
+      dLog ("[PERFORM_COMMAND_HANDLER] prsi " + GLOBAL.PRSI.name)
+      dLog ("[PERFORM_COMMAND_HANDLER] Check ACTION for " + GLOBAL.PRSI.name)
+      if (HasAttribute (GLOBAL.PRSI, "ACTION")) {
+        if (GLOBAL.PRSI = TROLL or GLOBAL.PRSI = INFLATED_BOAT or GLOBAL.PRSI = THIEF) {
+          HANDLED_BY_ACTION = Eval(GLOBAL.PRSI.ACTION + "(\"undefined\")")
+        }
+        else {
+          HANDLED_BY_ACTION = Eval(GLOBAL.PRSI.ACTION + "()")
+        }
+        if (HANDLED_BY_ACTION) {
+          dLog ("[PERFORM_COMMAND_HANDLER] Overidden by PRSI ACTION!")
+        }
+      }
+    }
+    // if still not handled, run the PRSO's ACTION, if applicable
+    if (not HANDLED_BY_ACTION and not GLOBAL.PRSO = NOTHING and not GLOBAL.PRSO = GLOBAL.PRSO_DIR) {
+      dLog ("[PERFORM_COMMAND_HANDLER] Check ACTION for " + GLOBAL.PRSO.name +"")
+      THIS_IS_IT (GLOBAL.PRSO)
+      if (HasAttribute (GLOBAL.PRSO, "ACTION")) {
+        if (GLOBAL.PRSO = TROLL or GLOBAL.PRSO = INFLATED_BOAT or GLOBAL.PRSO = THIEF) {
+          HANDLED_BY_ACTION = EvalToBoolean(GLOBAL.PRSO.ACTION + "(\"undefined\")")
+        }
+        else {
+          HANDLED_BY_ACTION = Eval(GLOBAL.PRSO.ACTION + "()")
+        }
+        if (HANDLED_BY_ACTION) {
+          dLog ("[PERFORM_COMMAND_HANDLER] Overidden by PRSO ACTION!")
+        }
+      }
+    }
+    // if STILL not handled, run the default command script
+    if (not HANDLED_BY_ACTION) {
+      dLog ("[PERFORM_COMMAND_HANDLER] Not handled by any action; running default command script.")
+      do (cmd, script, argsdict)
+    }
+    return (HANDLED_BY_ACTION)
+  </function>
+
+  <function name="PERFORM" parameters="vrb, prso, prsi"><![CDATA[
+    // This is not the ZIL way.
+    dLog ("[PERFORM] " + vrb + ", " + prso + ", " + prsi)
+    args = NewDictionary()
+
+    dictionary add (args, "multiple", HasAttribute(game.pov,"commandqueue"))
+    if (Instr(vrb.pattern,"object1") > 0) {
+      if (DictionaryContains (args, "object1")){
+        msg ("PERFORM: Dictionary already contains object1!")
+        RFATAL
+        return (2)
+      }
+      dictionary add (args, "object1", prso)
+    }
+    if (Instr(vrb.pattern,"object2") > 0) {
+      dictionary add (args, "object2", prsi)
+    }
+    if (Instr(vrb.pattern,"<exit>") > 0) {
+      dictionary add (args, "exit", prso)
+    }
+    if (Instr (vrb.pattern,"<text>") > 0) {
+      if (TypeOf(prso) = "string") {
+        dictionary add (args, "text", prso)
+      }
+      else if (TypeOf(prsi) = "string") {
+        dictionary add (args, "text", prsi)
+      }
+      else {
+        error ("PERFORM cannot pass non-string to text var!")
+      }
+    }
+    dLog ("[PERFORM] calling PERFORM_COMMAND")
+    PERFORM_COMMAND (vrb, "script", args)
+  ]]></function>
+
+  <function name="FIND_GRIND"><![CDATA[
+    if ((GLOBAL.PRSO = NOTHING or GLOBAL.PRSO = NewObjectList()) and HasAttribute(GLOBAL.PRSA,"FIND_PRSO")) {
+      dLog ("[PERFORM_COMMAND] " + GLOBAL.PRSA.name + ": FIND_PRSO: " + GLOBAL.PRSA.FIND_PRSO)
+      // find_candidates = FilterByAttribute(ScopeVisible(),GLOBAL.PRSA.FIND_PRSO)
+      // if (not ListCount(find_candidates) = 0) {
+        // GLOBAL.PRSO = ListItem (find_candidates, 0)
+        // msg ("(the " + GLOBAL.PRSO.alias + ")")
+        // }
+      // --
+      items = NewObjectList()
+      if (HasString(GLOBAL.PRSA, "SCOPE_PRSO")) {
+        dLog ("CHECKING SCOPE...")
+        scoping = GetAttribute(GLOBAL.PRSA,"SCOPE_PRSO")
+        onlytake = false
+        foreach (partscope, Split(scoping, " ")) {
+          if (partscope = "TAKE" or GLOBAL.PRSA = V_TAKE) {
+            onlytake = true
+          }
+          switch (partscope) {
+            case ("inventory","INVENTORY","HAVE") {
+              items = ListCombine(ScopeInventory(), items)
+            }
+            case ("CARRIED") {
+              foreach (cont, FilterByAttribute(FilterByType(ScopeInventory(), "container_base"),"OPENBIT")) {
+                items = ListCombine(GetAllChildObjects(cont), items)
+              }
+            }
+            case ("HELD") {
+              items = ListCombine(GetDirectChildren(game.pov),items)
+            }
+            case ("notheld","room","NOTHELD") {
+              items = ListCombine(items, ScopeVisibleNotHeld()) - game.pov
+            }
+            case ("all") {
+              items = ListCombine(items, ScopeVisible()) - game.pov
+            }
+            case ("container") {
+              items = ListCombine(items, FilterByType(ScopeVisible(), "container_base"))
+            }
+            case ("contents") {
+              foreach (cont, FilterByAttribute(FilterByType(ScopeVisible(), "container_base"),"OPENBIT")) {
+                items = ListCombine(items, GetAllChildObjects(cont))
+              }
+            }
+            case ("IN_ROOM") {
+              foreach (cont, FilterByType(ScopeVisibleNotHeld(), "container_base")) {
+                if (FSET_P(cont,"OPENBIT")) {
+                  items = ListCombine(items, ScopeVisibleForRoom(cont))
+                }
+              }
+            }
+            case ("ON_GROUND") {
+              items = ListCombine(items, ScopeReachableForRoom(game.pov.parent)) - game.pov
+            }
+            case ("world") {
+              items = ListCombine(items, AllObjects()) - game.pov
+            }
+            case ("none") {
+            }
+            default {
+              // The command's "scope" can be the name of an object, or an attribute of the player's parent
+              obj = GetObject(partscope)
+              if (not obj = null) {
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              if (HasObject(game.pov.parent, partscope)) {
+                obj = GetAttribute(game.pov.parent, partscope)
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              else if (HasAttribute(game.pov.parent, partscope)) {
+                attr = GetAttribute(game.pov.parent, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+              else if (HasAttribute(game.pov, partscope)) {
+                attr = GetAttribute(game.pov, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+            }
+          }
+        }
+      }
+      items = FilterByAttribute(items,GLOBAL.PRSA.FIND_PRSO)
+      if (ListCount(items) > 0) {
+        items = ListCompact(items)
+        GLOBAL.PRSO = ListItem(items,0)
+        msg ("(" + GLOBAL.PRSO.alias + ")")
+        dLog ("[PERFORM_COMMAND] setting PRSO to " + GLOBAL.PRSO.name + " using FIND")
+      }
+      // --
+    }
+    if (GLOBAL.PRSI = NOTHING and HasAttribute(GLOBAL.PRSA,"FIND_PRSI") and not GLOBAL.PRSO = LAMP) {
+      dLog ("[PERFORM_COMMAND] " + GLOBAL.PRSA.name + ": FIND_PRSI: " + GLOBAL.PRSA.FIND_PRSI)
+      // find_candidates = FilterByAttribute(ScopeVisible(),GLOBAL.PRSA.FIND_PRSI)
+      // if (not ListCount(find_candidates) = 0) {
+        // GLOBAL.PRSI = ListItem (find_candidates, 0)
+        // }
+      // --
+      items = NewObjectList()
+      if (HasString(GLOBAL.PRSA, "SCOPE_PRSI")) {
+        dLog ("CHECKING SCOPE...")
+        scoping = GetAttribute(GLOBAL.PRSA,"SCOPE_PRSI")
+        onlytake = false
+        foreach (partscope, Split(scoping, " ")) {
+          switch (partscope) {
+            case ("inventory","INVENTORY","HAVE") {
+              items = ListCombine(ScopeInventory(), items)
+            }
+            case ("CARRIED") {
+              foreach (cont, FilterByType(ScopeInventory(), "container_base")) {
+                items = ListCombine(GetAllChildObjects(cont), items)
+              }
+            }
+            case ("HELD") {
+              items = ListCombine(GetDirectChildren(game.pov),items)
+            }
+            case ("notheld","room","NOTHELD") {
+              items = ListCombine(items, ScopeVisibleNotHeld()) - game.pov
+            }
+            case ("all") {
+              items = ListCombine(items, ScopeVisible()) - game.pov
+            }
+            case ("container") {
+              items = ListCombine(items, FilterByType(ScopeVisible(), "container_base"))
+            }
+            case ("contents") {
+              foreach (cont, FilterByType(ScopeVisible(), "container_base")) {
+                items = ListCombine(items, GetAllChildObjects(cont))
+              }
+            }
+            case ("IN_ROOM") {
+              foreach (cont, FilterByType(ScopeVisibleNotHeld(), "container_base")) {
+                if (FSET_P(cont,"OPENBIT") or FSET_P(cont,"SURFACEBIT") or FSET_P(cont,"TRANSBIT")) {
+                  items = ListCombine(items, ScopeVisibleForRoom(cont))
+                }
+              }
+            }
+            case ("ON_GROUND") {
+              items = ListCombine(items, ScopeVisibleForRoom(game.pov.parent)) - game.pov
+            }
+            case ("world") {
+              items = ListCombine(items, AllObjects()) - game.pov
+            }
+            case ("none") {
+            }
+            default {
+              // The command's "scope" can be the name of an object, or an attribute of the player's parent
+              obj = GetObject(partscope)
+              if (not obj = null) {
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              if (HasObject(game.pov.parent, partscope)) {
+                obj = GetAttribute(game.pov.parent, partscope)
+                items = ListCombine(items, GetAllChildObjects(obj))
+              }
+              else if (HasAttribute(game.pov.parent, partscope)) {
+                attr = GetAttribute(game.pov.parent, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+              else if (HasAttribute(game.pov, partscope)) {
+                attr = GetAttribute(game.pov, partscope)
+                if (TypeOf(attr) = "objectlist") {
+                  items = ListCombine (items, attr)
+                }
+              }
+            }
+          }
+        }
+      }
+      items = ListExclude(FilterByAttribute(items,GLOBAL.PRSA.FIND_PRSI), GLOBAL.PRSO)
+      if (ListCount(items) > 0) {
+        items = ListCompact(items)
+        // TODO - dirty hack, else it lights the candles with the torch
+        if (not GLOBAL.PRSO = MATCH) {
+          if (MATCH in items and TORCH in items) {
+            list remove (items, TORCH)
+          }
+          GLOBAL.PRSI = ListItem(items,0)
+          dLog ("[PERFORM_COMMAND] setting PRSI to " + GLOBAL.PRSI.name + " using FIND")
+          msg ("(with the " + GLOBAL.PRSI.alias + ")")
+        }
+      }
+      // --
+    }
+  ]]></function>
+
+  <function name="SetUpRFATAL"><![CDATA[
+    GLOBAL.changedP_CONT => {
+      if (GLOBAL.P_CONT < 1) {
+        if (HasAttribute(game.pov,"commandqueue")) {
+          if (not game.pov.commandqueue = null) {
+            game.pov.commandqueue = null
+          }
+        }
+      }
+    }
+    game.pov.changedcommandqueue => {
+      if (game.pov.commandqueue <> null) {
+        GLOBAL.P_CONT = ListCount(game.pov.commandqueue)
+      }
+      else {
+        GLOBAL.P_CONT = 0
+      }
+    }
+  ]]></function>
+
+  <function name="AddGlobalObjectsToScope" parameters="items"><![CDATA[
+    foreach (o, GetDirectChildren(GLOBAL_OBJECTS)) {
+      list add (items, o)
+    }
+    if (HasAttribute(game.pov.parent, "GLOBAL")) {
+      globals = Split(game.pov.parent.GLOBAL, " ")
+      foreach (g, globals) {
+        o = GetObject(g)
+        if (o <> null) {
+          list add (items, o)
+        }
+      }
+    }
+  ]]></function>
+
+  <function name="SetSyntax" parameters="str,cmd"><![CDATA[
+    if (not HasAttribute (GLOBAL, "SYNTAX_TABLE")){
+      GLOBAL.SYNTAX_TABLE = NewList()
+    }
+    prep1 = "undefined"
+    prep2 = "undefined"
+    sarr = Split (str, " ")
+    firstw = StringListItem (sarr, 0)
+    if (firstw = "OBJECT,"){
+      // this is the COMMAND command
+      // this doesn't happen in Zork 1
+      verb = "COMMAND"
+    }
+    else {
+      verb = firstw
+    }
+    list remove (sarr, firstw)
+    if (not firstw = "OBJECT,"){
+      fullsyntax = "* " + Join (sarr, " ") + " = " + cmd.name
+    }
+    else {
+      fullsyntax = str + " = " + cmd.name
+    }
+    if (not ListContains(GLOBAL.SYNTAX_TABLE, fullsyntax)){
+      list add (GLOBAL.SYNTAX_TABLE, fullsyntax)
+    }
+    ocnt = 0
+    pcnt = 0
+    fcnt = 0
+    find1 = "undefined"
+    find2 = "undefined"
+    scnt = 0
+    scope1 = "undefined"
+    scope2 = "undefined"
+    findflg = false
+    scopeflg = false
+    foreach (s, sarr){
+      if (s = "OBJECT"){
+        if (ocnt = 2){
+          msg ("SetSyntax: too many objects! (" + str + ")")
+          return (2)
+        }
+        ocnt = ocnt + 1
+      }
+      else if (EndsWith (s, ")") and (findflg or scopeflg)){
+        s = Replace (s, ")", "")
+        if (findflg) {  
+          if (fcnt = 1){
+            if (find1 = "undefined"){
+              find1 = s
+            }
+            else {
+              find1 = find1 + " " + s
+            }
+          }
+          else {
+            if (find2 = "undefined"){
+              find2 = s
+            }
+            else {
+              find2 = find2 + " " + s
+            }
+          }
+        }
+        else if (scopeflg){
+          if (scnt = 1){
+            scope1 = scope1 + " " + s
+          }
+          else {
+            scope2 = scope2 + " " + s
+          }
+        }
+        findflg = false
+        scopeflg = false
+      }
+      else if (s = "(FIND"){
+        if (fcnt = 2){
+          msg ("SetSyntax: too many FINDs! ()")
+          return (2)
+        }
+        fcnt = ocnt
+        findflg = true
+      }
+      else if (StartsWith (s, "(")){
+        scopeflg = true
+        s = Replace (s, "(", "")
+        if (EndsWith( s, ")")){
+          scopeflg = false
+          s = Replace (s, ")", "")
+        }
+        if (scnt = 2){
+          msg ("SetSyntax: too many SCOPEs! (" + str + ")")
+          return (2)
+        }
+        scnt = ocnt
+        if (scnt = 1){
+          scope1 = s
+        }
+        else {
+          scope2 = s
+        }
+      }
+      else if (scopeflg){
+        if (scnt = 1){
+          scope1 = scope1 + " " + s
+        }
+        else {
+          scope2 = scope2 + " " + s
+        }
+      }
+      else {
+        if (pcnt = 2) {
+          msg ("SetSyntax: too many prepositions! (" + str + ")")
+          return (2)
+        }
+        pcnt = pcnt + 1
+        if (ocnt = 1) {
+          pcnt = 2
+        }
+        if (pcnt = 1){
+          prep1 = s
+        }
+        else {
+          prep2 = s
+        }
+      }
+    }
+    //actionnumber = IndexOf(AllCommands(), cmd)
+    //msg ("verb: " + verb)
+    //msg ("fullsyntax: " + fullsyntax)
+    //msg ("ocnt: " + ocnt)
+    //msg ("prep1: " + prep1)
+    //msg ("find1: " + find1)
+    //msg ("scope1: " + scope1)
+    //msg ("prep2: " + prep2)
+    //msg ("find2: " + find2)
+    //msg ("scope2: " + scope2)
+    //msg ("cmd: " + cmd.name)
+    //msg ("action number: " + actionnumber)
+    //msg (str + " = " + cmd.name)
+  ]]></function>
+
+  <function name="AddToSyntaxGrammarTable" parameters="str">
+    
+  </function>
+
+
+  <function name="ORPHAN" parameters="prsa, var, object1">
+    GLOBAL.O_FLAG = true
+    GLOBAL.O_TABLE = NewDictionary()
+    dictionary add (GLOBAL.O_TABLE, "cmdstr", game.pov.currentcommand)
+    dictionary add (GLOBAL.O_TABLE, "PRSA", prsa)
+    dictionary add (GLOBAL.O_TABLE, "ORPHANED", var)
+    if (not object1 = NOTHING) {
+      dictionary add (GLOBAL.O_TABLE, "object1", object1)
+    }
+  </function>
+
+</library>

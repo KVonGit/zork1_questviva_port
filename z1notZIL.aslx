@@ -1,0 +1,1218 @@
+<?xml version="1.0"?>
+<!--
+  not ZIL for ZORK 1
+-->
+<library>
+  <function name="TELL" parameters="txt">
+    OutputTextNoBr (txt)
+  </function>
+
+  <function name="CRLF"><![CDATA[
+    OutputTextNoBr ("<br/>")
+  ]]></function>
+
+  <function name="FSET_P" parameters="o, flag" type="boolean">
+    return (GetBoolean(o, flag))
+  </function>
+
+  <function name="FSET" parameters="o, flag">
+    set (o, flag, true)
+    switch (flag) {
+      case ("INVISIBLE") {
+        o.visible = false
+      }
+      case ("ONBIT") {
+        o.switchedon = true
+      }
+      case ("TOUCHBIT") {
+        if (GetBoolean(o,"isroom")) {
+          o.visited = true
+        }
+        else {
+          o.hasbeenmoved = true
+        }
+      }
+      case ("OPENBIT") {
+        o.isopen = true
+      }
+    }
+  </function>
+
+  <function name="FCLEAR" parameters="o, flag">
+    set (o, flag, false)
+    switch (flag) {
+      case ("INVISIBLE") {
+        o.visible = true
+      }
+      case ("ONBIT") {
+        o.switchedon = false
+      }
+      case ("TOUCHBIT") {
+        if (GetBoolean(o,"isroom")) {
+          o.visited = false
+        }
+        else {
+          o.hasbeenmoved = false
+        }
+      }
+      case ("OPENBIT") {
+        o.isopen = false
+      }
+    }
+  </function>
+
+  <function name="FIRST_P" parameters="OBJ" type="object"><![CDATA[
+    if (ListCount (ListExclude(GetDirectChildren (OBJ), player)) > 0) {
+      return (ListItem (ListExclude(GetDirectChildren (OBJ), player), 0))
+    }
+    return (NOTHING)
+  ]]></function>
+
+  <function name="NEXT_P" parameters="OBJ" type="object"><![CDATA[
+    if (OBJ = NOTHING) {
+      return (NOTHING)
+    }
+    loc = OBJ.parent
+    if (loc <> null) {
+      lst = ListExclude (GetDirectChildren (loc), player)
+      i = IndexOf(lst,OBJ)
+      // dLog ("i is " + i)
+      if (i > -1 and ListCount(lst) > i + 1) {
+        return (ListItem (lst, i + 1))
+      }
+    }
+    return (NOTHING)
+  ]]></function>
+
+  <function name="REST" parameters="list, n" type="list"><![CDATA[
+    if (not IsDefined("n")) {
+      n = 1
+    }
+    i = 0
+    lst = NewList()
+    foreach (item, list) {
+      if (i >= n) {
+        list add (lst, item)
+      }
+      i = i + 1
+    }
+    return (lst)
+  ]]></function>
+
+  <function name="PUT" parameters="list, n, val" type="list"><![CDATA[
+    if (TypeOf(list) = "objectlist") {
+      pippo = NewObjectList()
+    }
+    else if (TypeOf(list) = "stringlist") {
+      pippo = NewStringList()
+    }
+    else {
+      pippo = NewList()
+    }
+    if (game.debugging) {
+      dLog ("[PUT] list is " + list)
+      dLog ("[PUT] n is " + n)
+      dLog ("[PUT] val is " + val)
+    }
+    tmplist = ListExclude(list,pippo)
+    len = ListCount(tmplist)
+    i = len - 1
+    if (n > i) {
+      i = n
+    }
+    // erase the actual list
+    foreach (s, tmplist) {
+      list remove (list, s)
+    }
+    // rebuild it
+    for (item, 0, i) {
+      if (item = n) {
+        list add (list, val)
+      }
+      else if (item > len -1) {
+        if (TypeOf(list) = "stringlist") {
+          list add (list, "")
+        }
+        else if (TypeOf(list) = "objectlist") {
+          list add (list, game)
+        }
+        else {
+          list add (list, 0)
+        }
+      }
+      else {
+        list add (list, ListItem(tmplist,item))
+      }
+    }
+    if (game.debugging) {
+      dLog ("[PUT] list is now: " + list)
+    }
+    return (list)
+  ]]></function>
+
+  <function name="EQUAL_P" parameters="query, candidates" type="boolean">
+    // dLog ("EQUAL_P ...")
+    if (TypeOf(candidates) = "string") {
+      // dLog ("EQUAL_P: candidates is a string:")
+      // dLog (candidates)
+      candidates = Split(candidates," ")
+    }
+    if (not EndsWith(TypeOf(candidates),"list")) {
+      // dLog ("[EQUAL_P] returning " + Equal(query,candidates))
+      return (Equal(query,candidates))
+    }
+    if (TypeOf(candidates) = "stringlist") {
+      list = NewStringList()
+      foreach (s, candidates) {
+        list add (list, Trim(s))
+      }
+      candidates = list
+    }
+    // dLog ("[EQUAL_P] returning " + ListContains(candidates,query))
+    return (ListContains(candidates,query))
+  </function>
+
+  <function name="VERB_P" parameters="vrb" type="boolean"><![CDATA[
+    // OutputTextNoBr ("VERB_P vrb is ")
+    // msg (vrb)
+    if (TypeOf(vrb) = "object") {
+      return (GLOBAL.PRSA = vrb)
+    }
+    if (TypeOf(vrb) = "string") {
+      if (Instr(vrb," ") > 0) {
+        spltchar = " "
+        vrb = Split(vrb,spltchar)
+      }
+      else {
+        vrb = GetObject(vrb)
+        if (not vrb <> null) {
+          if (vrb = GLOBAL.PRSA) {
+            return (true)
+          }
+          else {
+            return (false)
+          }
+        }
+      }
+    }
+    if (TypeOf(vrb) = "stringlist") {
+      foreach (vstr, vrb) {
+        if (not StartsWith(vstr,"V_")) {
+          vstr = "V_" + Trim(vstr)
+        }
+        if (GetObject(Trim(vstr)) = GLOBAL.PRSA) {
+          return (true)
+        }
+      }
+      return (false)
+    }
+    if (TypeOf(vrb) = "objectlist") {
+      foreach (v, vrb) {
+        if (v = GLOBAL.PRSA) {
+          return (true)
+        }
+      }
+      return (false)
+    }
+    return (false)
+  ]]></function>
+
+  <function name="PROB" parameters="BASE_P, LOSER_P" type="boolean"><![CDATA[
+    if (IsDefined("LOSER_P")) {
+      return (ZPROB(BASE_P))
+    }
+    else {
+      return (BASE_P > RANDOM(100))
+    }
+  ]]></function>
+
+  <function name="RANDOM" parameters="range" type="int"><![CDATA[
+    // Version 6
+    // Code from GitHub Copilot, based on Infocom's MS-DOS ZIP assembly
+    // https://github.com/erkyrath/infocom-zcode-terps/blob/d5ac95a838483af89004dc9f5027abc0163a2ecc/msdos/mszip.asm
+    // Initialize seed if needed
+    if (not HasAttribute(GLOBAL, "rng_seed1")) {
+      cdUTC = CurrentDateUTC()
+      if (not TypeOf(cdUTC) = "int") {
+        GLOBAL.rng_seed1 = 0x8D0E
+        GLOBAL.rng_seed2 = 0x9F81
+      }
+      else {
+        GLOBAL.rng_seed1 = cdUTC % 65536
+        GLOBAL.rng_seed2 = (cdUTC / 65536) % 65536
+      }
+    }
+    // Seeding mode: negative range sets the seed
+    if (range < 1) {
+      msg ("[RANDOM adjusted for predictability.]")
+      if (range < 0) {
+        GLOBAL.rng_seed1 = abs(range) % 65536
+        // GLOBAL.rng_seed2 = GetRandomInt(0, 65535)
+        GLOBAL.rng_seed2 = 0
+        // msg ("GLOBAL.rng_seed1 : " + GLOBAL.rng_seed1)
+        // msg ("GLOBAL.rng_seed2 : " + GLOBAL.rng_seed2)
+      }
+      return (0)
+    }
+    // Perform the Z-Machine RNG algorithm
+    // Save current seeds
+    local_seed1 = GLOBAL.rng_seed1
+    local_seed2 = GLOBAL.rng_seed2
+    // Move seed1 to seed2
+    GLOBAL.rng_seed2 = local_seed1
+    // Rotate right with carry:
+    // Extract carry from seed1's LSB
+    carry = local_seed1 % 2
+    // Shift both seeds right by 1
+    local_seed1 = local_seed1 >> 1
+    local_seed2 = local_seed2 >> 1
+    // If there was a carry, add it to the MSB of seed2
+    if (carry = 1) {
+      local_seed2 = local_seed2 + 32768
+    }
+    // XOR and store result
+    GLOBAL.rng_seed1 = local_seed1 xor local_seed2
+    // Mask to 15 bits (0x7FFF = binary 0111111111111111)
+    GLOBAL.rng_seed1 = GLOBAL.rng_seed1 and 0x7FFF
+    // Get remainder when divided by range
+    result = GLOBAL.rng_seed1 % range
+    // Return 1 to range (not 0)
+    return (result + 1)
+  ]]></function>
+
+  <function name="ZPROB" parameters="BASE" type="boolean"><![CDATA[
+    if (GetBoolean(GLOBAL, "LUCKY_P")) {
+      return (BASE > RANDOM(100))
+    }
+    else {
+      return (BASE > RANDOM(300))
+    }
+  ]]></function>
+
+  <function name="LOC" parameters="o" type="object">
+    if (HasAttribute(o, "LOC")) {
+      return (o.LOC)
+    }
+    return (o.parent)
+  </function>
+
+  <function name="L_P" parameters="A, B" type="boolean"><![CDATA[
+    return (A < B)
+  ]]></function>
+
+  <function name="G_P" parameters="a, b" type="boolean"><![CDATA[
+    // dLog ("[G_P]")
+    return (a > b)
+  ]]></function>
+
+  <function name="MOVE" parameters="o, loc">
+    dLog ("[MOVE] " + o.name + " to " + loc.name)
+    o.LOC = loc
+    if (o = game.pov and FSET_P(loc,"VEHBIT")) {
+      // do nothing
+    }
+    else {
+      MoveObject (o, loc)
+      if (FSET_P(o,"VEHBIT") and game.pov.LOC = o) {
+        MoveObject (game.pov, loc)
+      }
+    }
+  </function>
+
+  <function name="RFATAL">
+    dLog ("[RFATAL]")
+    game.pov.commandqueue = null
+    // game.RFATAL_FLAG = true
+    SuppressTurnscripts
+  </function>
+
+  <function name="ENABLE" parameters="interrupt">
+    interrupt.enabled = true
+  </function>
+
+  <function name="DISABLE" parameters="interrupt">
+    interrupt.enabled = false
+  </function>
+
+  <function name="REMOVE_CAREFULLY" parameters="OBJ">
+    dLog ("[REMOVE_CAREFULLY]...")
+    dLog ("[REMOVE_CAREFULLY] OBJ: " + OBJ)
+    if (OBJ = GLOBAL.P_IT_OBJECT) {
+      GLOBAL.P_IT_OBJECT = NOTHING
+    }
+    OLIT = GLOBAL.LIT
+    RemoveObject (OBJ)
+    // OBJ.parent = zgraveyard
+    GLOBAL.LIT = LIT_P(GLOBAL.HERE)
+    if (OLIT and not OLIT = GLOBAL.LIT) {
+      msg ("You are left in the dark...")
+    }
+    dLog ("[REMOVE_CAREFULLY] " + OBJ.name + " removed")
+  </function>
+
+  <function name="V_FIRST_LOOK">
+    dLog ("[V_FIRST_LOOK]")
+    // dLog ("[V_FIRST_LOOK] calling DESCRIBE_ROOM(false)")
+    if (DESCRIBE_ROOM(false)) {
+      // dLog ("[V_FIRST_LOOK] DESCRIBE_ROOM(false) returned True")
+      if (not GLOBAL.SUPER_BRIEF) {
+        // dLog ("[V_FIRST_LOOK] not SUPER_BRIEF; calling  DESCRIBE_OBJECTS (GLOBAL.VERBOSE)")
+        DESCRIBE_OBJECTS (GLOBAL.VERBOSE)
+      }
+    }
+  </function>
+
+  <function name="DESCRIBE_ROOM" parameters="LOOK_P" type="boolean"><![CDATA[
+    // dLog ("[DESCRIBE_ROOM]")
+    AV = NOTHING
+    if (not IsDefined("LOOK_P")) {
+      // dLog ("[DESCRIBE_ROOM] LOOK_P not defined; setting to False")
+      LOOK_P = true
+    }
+    if (LOOK_P or GLOBAL.VERBOSE) {
+      V_P = true
+    }
+    else {
+      V_P = false
+    }
+    if (not GLOBAL.LIT) {
+      TELL ("It is pitch black.")
+      if (not GLOBAL.SPRAYED_P) {
+        TELL (" You are likely to be eaten by a grue.")
+      }
+      CRLF
+      return (false)
+    }
+    if (not FSET_P (GLOBAL.HERE, "TOUCHBIT")) {
+      FSET (GLOBAL.HERE, "TOUCHBIT")
+      V_P = true
+    }
+    if (FSET_P (GLOBAL.HERE, "MAZEBIT")) {
+      FCLEAR (GLOBAL.HERE, "TOUCHBIT")
+    }
+    if (GetBoolean (GLOBAL.HERE, "isroom")) {
+      // msg ("GLOBAL.HERE.alias: " + GLOBAL.HERE.alias)
+      TELL ("<b>" + GLOBAL.HERE.alias + "</b>")
+      if (FSET_P (LOC (GLOBAL.WINNER), "VEHBIT")) {
+        AV = LOC(GLOBAL.WINNER)
+        TELL (", in the " + GetAttribute (LOC (GLOBAL.WINNER), "alias"))
+      }
+      CRLF
+    }
+    if (V_P and HasAttribute(GLOBAL.HERE, "ACTION") and EvalToBoolean(GLOBAL.HERE.ACTION + "(\"M_LOOK\")")) {
+      // dLog ("[DESCRIBE_ROOM] V_P is true AND the room's ACTION handled M_LOOK; returning true")
+      return (true)
+    }
+    else if (V_P and HasString(GLOBAL.HERE, "LDESC")) {
+      // dLog ("[DESCRIBE_ROOM] the room has LDESC")
+      msg (GLOBAL.HERE.LDESC)
+    }
+    else {
+      if (HasAttribute(GLOBAL.HERE, "ACTION")) {
+        unused = Eval(GLOBAL.HERE.ACTION + "(\"M_LOOK\")"
+      }
+    }
+    if (not GLOBAL.HERE = AV and FSET_P (AV, "VEHBIT")) {
+      unused = Eval (AV.ACTION + "(\"M_LOOK\")")
+    }
+    return (true)
+  ]]></function>
+
+  <function name="DESCRIBE_OBJECTS" parameters="V_P">
+    // dLog ("[DESCRIBE_OBJECTS]")
+    if (not IsDefined("V_P")) {
+      V_P = false
+    }
+    if (V_P or GLOBAL.VERBOSE) {
+      V_P = true
+    }
+    else {
+      V_P = false
+    }
+    if (GLOBAL.LIT) {
+      // dLog ("[DESCRIBE_OBJECTS] It's not dark. Checking for objects...")
+      if (not FIRST_P(GLOBAL.HERE) = NOTHING) {
+        // dLog ("[DESCRIBE_OBJECTS] Found objects. Calling PRINT_CONT (GLOBAL.HERE, V_P, -1)")
+        PRINT_CONT (GLOBAL.HERE, V_P, -1)
+      }
+    }
+    else {
+      // dLog ("[DESCRIBE_OBJECTS] It's dark.")
+      msg ("Only bats can see in the dark. And you're not one.")
+    }
+  </function>
+
+  <function name="DESCRIBE_OBJECT" parameters="OBJ, V_P, LEVEL">
+    // msg("DESCRIBE_OBJECT("+OBJ.name+","+V_P+","+LEVEL+")")
+    GLOBAL.DESC_OBJECT = OBJ
+    if (LEVEL = 0 and HasAttribute (OBJ, "DESCFCN")) {
+      boolie = Eval(OBJ.DESCFCN + "(\"M_OBJDESC\")")
+      if (boolie) {
+        return (true)
+      }
+    }
+    else if (LEVEL = 0 and (not FSET_P(OBJ, "TOUCHBIT") and (HasAttribute(OBJ, "FDESC")) or HasAttribute(OBJ,"LDESC"))) {
+      if ((not FSET_P(OBJ,"TOUCHBIT")) and HasAttribute(OBJ,"FDESC")) {
+        if (not Trim(ProcessText(OBJ.FDESC)) = "") {
+          TELL (OBJ.FDESC)
+        }
+        else {
+          Log (OBJ.name + " FDESC returns empty!")
+        }
+      }
+      else if (HasAttribute(OBJ,"LDESC")) {
+        if (not Trim(ProcessText(OBJ.LDESC)) = "") {
+          TELL (OBJ.LDESC)
+        }
+        else {
+          Log (OBJ.name + " LDESC returns empty!")
+        }
+      }
+    }
+    else if (LEVEL = 0) {
+      TELL ("There is a " + OBJ.alias + " here")
+      if (FSET_P(OBJ, "ONBIT")) {
+        TELL (" (providing light)")
+      }
+      TELL (".")
+    }
+    else {
+      TELL (StringListItem(GLOBAL.INDENTS, LEVEL))
+      TELL ("A " + OBJ.alias)
+      if (FSET_P(OBJ, "ONBIT")) {
+        TELL (" (providing light)")
+      }
+      else if (FSET_P(OBJ, "WEARBIT") and IN_P(OBJ, GLOBAL.WINNER)) {
+        TELL (" (being worn)")
+      }
+    }
+    if (LEVEL = 0 and FSET_P(LOC(game.pov), "VEHBIT")) {
+      TELL (" (outside the " + GetAttribute(LOC(GLOBAL.WINNER), "alias") + ")")
+    }
+    CRLF
+    if (SEE_INSIDE_P(OBJ) and not FIRST_P(OBJ) = NOTHING) {
+      PRINT_CONT (OBJ, V_P, LEVEL)
+    }
+  </function>
+
+  <function name="PRINT_CONTENTS" parameters="OBJ"><![CDATA[
+    LOC_1ST_P = true
+    IT_P = NOTHING
+    TWO_P = false
+    F = FIRST_P (OBJ)
+    if (not F = NOTHING) {
+      exitwhile = false
+      while (not exitwhile) {
+        N = NEXT_P (F)
+        if (LOC_1ST_P) {
+          LOC_1ST_P = false
+        }
+        else {
+          // The original adds a comma even if there are only two objects.
+          n = ListCount(FilterByAttribute(ScopeVisibleForRoom(OBJ),"parent",OBJ))
+          if (n > 2) {
+            TELL (",")
+          }
+          TELL (" ")
+          if (N = NOTHING) {
+            TELL ("and ")
+          }
+        }
+        TELL ("a " + GetAttribute(F, "alias"))
+        if (IT_P = NOTHING and not TWO_P) {
+          IT_P = F
+        }
+        else {
+          TWO_P = true
+          IT_P = NOTHING
+        }
+        F = N
+        if (F = NOTHING) {
+          if ((not IT_P = NOTHING) and not TWO_P) {
+            THIS_IS_IT (IT_P)
+          }
+          exitwhile = true
+        }
+      }
+    }
+  ]]></function>
+
+  <function name="PRINT_CONT" parameters="OBJ, V_P, LEVEL" type="boolean">
+    // dLog ("[PRINT_CONT]")
+    if (not IsDefined("V_P")) {
+      V_P = false
+    }
+    if (not IsDefined("LEVEL")) {
+      LEVEL = 0
+    }
+    // dLog ("[PRINT_CONT] OBJ: " + OBJ.name)
+    // dLog ("[PRINT_CONT] V_P: " + V_P)
+    // dLog ("[PRINT_CONT] LEVEL: " + LEVEL)
+    Y = NOTHING
+    LOC_1ST_P = false
+    SHIT = false
+    AV = NOTHING
+    STR = "undefined"
+    PV_P = false
+    INV_P = false
+    Y = FIRST_P(OBJ)
+    if (FIRST_P(OBJ) = NOTHING) {
+      // dLog ("[PRINT_CONT] FIRST_P(OBJ) = NOTHING; returning true")
+      return (true)
+    }
+    if (FSET_P(LOC(GLOBAL.WINNER),"VEHBIT")) {
+      // dLog ("[PRINT_CONT] WINNER has VEHBIT")
+      AV = LOC(GLOBAL.WINNER)
+    }
+    else {
+      // dLog ("[PRINT_CONT] WINNER is not a vehicle")
+      AV = NOTHING
+    }
+    LOC_1ST_P = true
+    SHIT = true
+    exitwhile = false
+    if (GLOBAL.WINNER = OBJ or GLOBAL.WINNER = LOC(OBJ)) {
+      // dLog ("[PRINT_CONT] GLOBAL.WINNER = OBJ or GLOBAL.WINNER = LOC(OBJ); setting INV_P to true")
+      INV_P = true
+    }
+    else {
+      while (not exitwhile) {
+        if (Y = NOTHING) {
+          // dLog ("[PRINT_CONT] Y is NOTHING")
+          // dLog ("[PRINT_CONT] exiting WHILE loop")
+          exitwhile = true
+        }
+        else if (Y = AV) {
+          // dLog ("[PRINT_CONT] Y has VEHBIT; setting PV_P to true")
+          PV_P = true
+        }
+        else if (Y = GLOBAL.WINNER) {
+          // dLog ("[PRINT_CONT] ignoring GLOBAL.WINNER")
+          // do nothing
+        }
+        else if ((not FSET_P(Y, "INVISIBLE")) and (not FSET_P(Y, "TOUCHBIT")) and HasAttribute(Y,"FDESC")) {
+          // dLog ("[PRINT_CONT] Y is not INVISIBLE, does not have TOUCHBIT, and has FDESC")
+          STR = Y.FDESC
+          if (not FSET_P(Y,"NDESCBIT")) {
+            // dLog ("[PRINT_CONT] Y has no NDESCBIT")
+            if (not Trim(ProcessText(STR)) = "") {
+              msg (STR)
+            }
+            SHIT = false
+          }
+          if (SEE_INSIDE_P(Y) and (not HasAttribute(LOC(Y),"DESCFCN")) and not FIRST_P(Y) = NOTHING) {
+            // dLog ("[PRINT_CONT] Y has direct children; calling PRINT_CONT(Y,V_P,0)")
+            if (PRINT_CONT(Y,V_P,0)) {
+              // dLog ("[PRINT_CONT] PRINT_CONT(Y,V_P,0) returned true; setting LOC_1ST_P to false")
+              LOC_1ST_P = false
+            }
+            // dLog ("[PRINT_CONT] COMMENTED OUT:  Y = NEXT_P(Y)")
+            // Y = NEXT_P(Y)
+          }
+        }
+        // dLog ("[PRINT_CONT] setting Y to NEXT_P(" + Y.name + ")")
+        Y = NEXT_P(Y)
+        // dLog ("[PRINT_CONT] Y is now " + Y.name)
+      }
+    }
+    // dLog ("[PRINT_CONT 2] setting Y to FIRST_P(OBJ)")
+    Y = FIRST_P(OBJ)
+    // dLog ("[PRINT_CONT 2] Y is now " + Y.name)
+    exitwhile = false
+    while (not exitwhile) {
+      if (Y = NOTHING) {
+        // dLog ("[PRINT_CONT 2] Y is NOTHING...")
+        if (PV_P and (not AV = NOTHING) and (not FIRST_P(AV) = NOTHING)) {
+          // dLog ("[PRINT_CONT] PV_P and (not AV = NOTHING) and (not FIRST_P(AV) = NOTHING); increasing LEVEL and calling PRINT_CONT")
+          LEVEL = LEVEL + 1
+          PRINT_CONT (AV, V_P, LEVEL)
+        }
+        // dLog ("[PRINT_CONT] exiting second WHILE loop")
+        exitwhile = true
+      }
+      else if (Y = AV or Y = ADVENTURER) {
+        // dLog ("[PRINT_CONT] Y is either a vehicle or the player; so ignore Y")
+        // do nothing
+      }
+      else if ((not FSET_P(Y, "INVISIBLE")) and (INV_P or FSET_P(Y,"TOUCHBIT") or not HasAttribute(Y,"FDESC"))) {
+        // dLog ("[PRINT_CONT] (not FSET_P(Y, \"INVISIBLE\")) and (INV_P or FSET_P(Y,\"TOUCHBIT\") or not HasAttribute(Y,\"FDESC\"))")
+        if (not FSET_P(Y, "NDESCBIT")) {
+          // dLog ("[PRINT_CONT] Y does not have NDESCBIT...")
+          if (LOC_1ST_P) {
+            if (FIRSTER(OBJ,LEVEL)) {
+              if (L_P(LEVEL,0)) {
+                LEVEL = 0
+              }
+            }
+            LEVEL = LEVEL + 1
+            LOC_1ST_P = false
+          }
+          if (L_P(LEVEL,0)) {
+            LEVEL = 0
+          }
+          // dLog ("[PRINT_CONT] calling DESCRIBE_OBJECT (Y, V_P, LEVEL)")
+          DESCRIBE_OBJECT (Y, V_P, LEVEL)
+        }
+        else if ((not FIRST_P(Y) = NOTHING) and SEE_INSIDE_P(Y)) {
+          // dLog ("[PRINT_CONT] (not FIRST_P(Y) = NOTHING) and SEE_INSIDE_P(Y); increasing LEVEL and calling PRINT_CONT")
+          LEVEL = LEVEL + 1
+          PRINT_CONT (Y, V_P, LEVEL)
+          LEVEL = LEVEL - 1
+        }
+      }
+      Y = NEXT_P(Y)
+    }
+    if (LOC_1ST_P and SHIT) {
+      // dLog ("[PRINT_CONT] LOC_1ST_P and SHIT; returning false")
+      return (false)
+    }
+    else {
+      // dLog ("[PRINT_CONT] not (LOC_1ST_P and SHIT); returning true")
+      return (true)
+    }
+  </function>
+
+  <function name="FIRSTER" parameters="OBJ, LEVEL" type="boolean">
+    if (OBJ = TROPHY_CASE) {
+      msg ("Your collection of treasures consists of:")
+      return (true)
+    }
+    else if (OBJ = GLOBAL.WINNER) {
+      msg ("You are carrying:")
+      return (true)
+    }
+    else if (not GetBoolean(OBJ,"isroom")) {
+      if (G_P(LEVEL,0)) {
+        TELL (GLOBAL.INDENTS[LEVEL])
+      }
+      if (FSET_P(OBJ,"SURFACEBIT")) {
+        msg ("Sitting on the " + OBJ.alias + " is: ")
+      }
+      else if (FSET_P(OBJ,"ACTORBIT")) {
+        msg ("The " + OBJ.alias + " is holding: ")
+      }
+      else {
+        msg ("The " + OBJ.alias + " contains:")
+      }
+      return (true)
+    }
+    return (false)
+  </function>
+
+  <function name="SEE_INSIDE_P" parameters="OBJ" type="boolean">
+    dLog ("[SEE_INSIDE_P]...")
+    res = not FSET_P(OBJ,"INVISIBLE") and (FSET_P(OBJ,"TRANSBIT") or FSET_P(OBJ,"OPENBIT"))
+    dLog ("[SEE_INSIDE_P] returning " + res)
+    return (res)
+  </function>
+
+  <function name="SCORE_UPD" parameters="NUM" type="boolean">
+    dLog ("[SCORE_UPD]...")
+    dLog ("[SCORE_UPD] NUM=" + NUM)
+    GLOBAL.BASE_SCORE = GLOBAL.BASE_SCORE + NUM
+    GLOBAL.SCORE = GLOBAL.SCORE + NUM
+    if (GLOBAL.SCORE = 350 and not GetBoolean(GLOBAL, "WON_FLAG")) {
+      GLOBAL.WON_FLAG = true
+      MAP.visible = true
+      MAP.INVISIBLE = false
+      WEST_OF_HOUSE.TOUCHBIT = false
+      WEST_OF_HOUSE.visited = false
+      msg ("An almost inaudible voice whispers in your ear, \"Look to your treasures for the final secret.\"")
+      return (true)
+    }
+    else {
+      return (false)
+    }
+  </function>
+
+  <function name="SCORE_OBJ" parameters="OBJ">
+    // dLog ("[SCORE_OBJ]...")
+    dLog ("[SCORE_OBJ] OBJ=" + OBJ.name)
+    if (not HasAttribute(OBJ,"VALUE")) {
+      OBJ.VALUE = 0
+    }
+    if (G_P(OBJ.VALUE,0)) {
+      dLog ("[SCORE_OBJ] calling SCORE_UPD(" + OBJ.VALUE + ")")
+      SCORE_UPD (OBJ.VALUE)
+      OBJ.VALUE = 0
+    }
+  </function>
+
+  <function name="YES_P" type="boolean">
+    get input {
+      result = Trim(UCase(result))
+      return (result = "YES" or result = "Y")
+    }
+    return (false)
+  </function>
+
+  <function name="ITAKE" parameters="VB" type="boolean">
+    dLog ("[ITAKE]")
+    if (not IsDefined("VB")) {
+      // dLog ("[ITAKE] VB not defined; setting to true")
+      VB = true
+    }
+    // dLog ("[ITAKE] VB = " + VB)
+    if (GLOBAL.DEAD) {
+      // dLog ("[ITAKE] player is dead; returning false")
+      if (VB) {
+        msg ("Your hand passes through the object.")
+      }
+      return (false)
+    }
+    else if (not FSET_P(GLOBAL.PRSO, "TAKEBIT")) {
+      // dLog ("[ITAKE] no TAKEBIT; returning false")
+      if (VB) {
+        msg (PICK_ONE(GLOBAL.YUKS))
+      }
+      return (false)
+    }
+    else if (FSET_P(LOC(GLOBAL.PRSO),"CONTBIT") and not FSET_P(LOC(GLOBAL.PRSO),"OPENBIT")) {
+      // Kludge for parser calling itake
+      dLog ("[ITAKE] Kludge for parser calling ITAKE; returning false")
+      return (false)
+    }
+    else if ((not IN_P(LOC(GLOBAL.PRSO),GLOBAL.WINNER)) and G_P(WEIGHT(GLOBAL.PRSO), WEIGHT(GLOBAL.WINNER)) and GetBoolean(GLOBAL,"LOAD_ALLOWED")) {
+      // dLog ("[ITAKE] load too heavy; returning false")
+      if (VB) {
+        TELL ("Your load is too heavy")
+        if (L_P(GLOBAL.LOAD_ALLOWED,GLOBAL.LOAD_MAX)) {
+          TELL (", especially in light of your condition.")
+        }
+        else {
+          TELL (".")
+        }
+        CRLF
+      }
+      RFATAL
+      return (false)
+    }
+    else if (VERB_P(V_TAKE) and G_P(CCOUNT(GLOBAL.WINNER), GLOBAL.FUMBLE_NUMBER) and PROB(CCOUNT(GLOBAL.WINNER) * GLOBAL.FUMBLE_NUMBER)) {
+      dLog ("[ITAKE] holding too many things; returning false")
+      msg ("You're holding too many things already!")
+      return (false)
+    }
+    else {
+      // dLog ("[ITAKE] SUCCESS")
+      MOVE (GLOBAL.PRSO, GLOBAL.WINNER)
+      FCLEAR (GLOBAL.PRSO, "NDESCBIT")
+      FSET (GLOBAL.PRSO, "TOUCHBIT")
+      SCORE_OBJ (GLOBAL.PRSO)
+      dLog ("[ITAKE] returning true")
+      return (true)
+    }
+  </function>
+
+  <function name="IDROP" type="boolean">
+    if ((not IN_P(GLOBAL.PRSO, GLOBAL.WINNER)) and not IN_P(LOC(GLOBAL.PRSO),GLOBAL.WINNER)) {
+      msg ("You're not carrying the " + GLOBAL.PRSO.alias + ".")
+      return (false)
+    }
+    else if ((not IN_P(GLOBAL.PRSO,GLOBAL.WINNER)) and not FSET_P(LOC(GLOBAL.PRSO),"OPENBIT")) {
+      msg ("The " + GLOBAL.PRSO.alias + " is closed.")
+      return (false)
+    }
+    else {
+      MOVE (GLOBAL.PRSO, LOC(GLOBAL.WINNER))
+      return (true)
+    }
+  </function>
+
+  <function name="CCOUNT" parameters="OBJ" type="int">
+    // dLog ("[CCOUNT]")
+    // dLog ("[CCOUNT] OBJ = " + OBJ.name)
+    CNT = ListCount (FilterByNotAttribute(GetDirectChildren(OBJ),"WEARBIT"))
+    // dLog ("[CCOUNT] returning: " + CNT)
+    return (CNT)
+  </function>
+
+  <function name="WEIGHT" parameters="OBJ" type="int"><![CDATA[
+    WT = 0
+    SIZE = 0
+    if (HasAttribute(OBJ,"SIZE")) {
+      SIZE = OBJ.SIZE
+    }
+    lst = GetDirectChildren(OBJ)
+    if (ListCount(lst) > 0) {
+      foreach (o, lst) {
+        if (OBJ = GLOBAL.PLAYER and FSET_P(o,"WEARBIT")) {
+          WT = WT + 1
+        }
+        else {
+          WT = WT + WEIGHT(o)
+        }
+      }
+    }
+    return (WT + SIZE)
+  ]]></function>
+
+  <function name="HACK_HACK" parameters="str">
+    if (IN_P(GLOBAL.PRSO, GLOBAL_OBJECTS) and (VERB_P(V_WAVE) or VERB_P(V_RAISE) or VERB_P(V_LOWER))) {
+      msg ("The " + GLOBAL.PRSO.alias + " isn't here!")
+    }
+    else {
+      msg (str + GLOBAL.PRSO.alias + PICK_ONE(GLOBAL.HO_HUM))
+    }
+  </function>
+
+  <function name="NO_GO_TELL" parameters="AV, WLOC">
+    if (not AV = "undefined") {
+      msg ("You can't go there in a " + WLOC.alias + ".")
+    }
+    else {
+      msg ("You can't go there without a vehicle.")
+    }
+  </function>
+
+  <function name="GOTO" parameters="RM, V_P" type="boolean"><![CDATA[
+    dLog ("[GOTO]...")
+    dLog ("[GOTO] RM is...")
+    dLog (RM.name)
+    if (not IsDefined("V_P")) {
+      V_P = true
+    }
+    LB = FSET_P(RM,"RLANDBIT")
+    WLOC = LOC(GLOBAL.WINNER)
+    AV = "undefined"
+    OLIT = GLOBAL.LIT
+    OHERE = GLOBAL.HERE
+    if (FSET_P(WLOC, "VEHBIT")) {
+      AV = WLOC.VTYPE
+      dLog ("[GOTO] setting AV to ")
+      dLog (AV)
+    }
+    if (not LB and AV = "undefined") {
+      NO_GO_TELL (AV, WLOC)
+      return (false)
+    }
+    if (not LB and not FSET_P(RM,AV)) {
+      NO_GO_TELL (AV, WLOC)
+      return (false)
+    }
+    if (FSET_P(GLOBAL.HERE, "RLANDBIT") and LB and not AV = "undefined" and not AV = "RLANDBIT" and not FSET_P(RM,AV)) {
+      NO_GO_TELL (AV, WLOC)
+      return (false)
+    }
+    if (FSET_P(RM, "RMUNGBIT")) {
+      msg (RM.LDESC)
+      return (false)
+    }
+    else {
+      if (LB and (not FSET_P(GLOBAL.HERE, "RLANDBIT")) and (not GLOBAL.DEAD) and FSET_P(WLOC,"VEHBIT")) {
+        msg ("The " + WLOC.alias + " comes to a rest on the shore.<br/>")
+      }
+      if (not AV = "undefined") {
+        MOVE (WLOC, RM)
+      }
+      else {
+        MOVE (GLOBAL.WINNER, RM)
+      }
+      GLOBAL.HERE = RM
+      GLOBAL.LIT = LIT_P(GLOBAL.HERE)
+      if ((not OLIT) and (not GLOBAL.LIT) and PROB(80)) {
+        if (GLOBAL.SPRAYED_P) {
+          msg ("There are sinister gurgling noises in the darkness all around you!")
+        }
+        else {
+          TELL ("Oh, no! A lurking grue slithered into the ")
+          if (FSET_P(LOC(GLOBAL.WINNER),"VEHBIT")) {
+            TELL (LOC(GLOBAL.WINNER))
+          }
+          else {
+            TELL ("room")
+          }
+          pippo = JIGS_UP (" and devoured you!")
+          return (true)
+        }
+      }
+      if ((not GLOBAL.LIT) and GLOBAL.WINNER = ADVENTURER) {
+        msg ("You have moved into a dark place.")
+        GLOBAL.P_CONT = 0
+      }
+      if (HasAttribute(GLOBAL.HERE,"ACTION")) {
+        nada = EvalToBoolean (GLOBAL.HERE.ACTION + "(\"M_ENTER\")")
+      }
+      SCORE_OBJ (RM)
+      if (not GLOBAL.HERE = RM) {
+        return (true)
+      }
+      else if ((not ADVENTURER = GLOBAL.WINNER) and IN_P(ADVENTURER,OHERE)) {
+        msg ("The " + WINNER.alias + " leaves the room.")
+      }
+      else if (GLOBAL.HERE = OHERE and GLOBAL.HERE = ENTRANCE_TO_HADES) {
+        return (true)
+      }
+      else if (V_P and GLOBAL.WINNER = ADVENTURER) {
+        V_FIRST_LOOK
+      }
+      return (true)
+    }
+    dLog ("[GOTO] end of script; returning false")
+    return (false)
+  ]]></function>
+
+  <function name="LKP" parameters="ITM, TBL" type="dictionary">
+    dLog ("[LKP] ...")
+    dLog ("[LKP]: ITM: " + ITM)
+    dLog("[LKP]: TBL: " + TBL)
+    retval = NOTHING
+    CNT = 0
+    len = ListCount(TBL) - 1
+    foreach (item, TBL) {
+      if (TypeOf(item) = TypeOf(ITM)) {
+        if (item = ITM) {
+          if (CNT = len) {
+            return (QuickParams("result",NOTHING))
+          }
+          retval = TBL[CNT + 1]
+          return (QuickParams("result",retval))
+        }
+      }
+      CNT = CNT + 1
+    }
+    return (QuickParams("result",retval))
+  </function>
+
+  <function name="DO_WALK" parameters="dir">
+    GLOBAL.P_WALK_DIR = dir
+    do (V_WALK, "script", QuickParams("exit", dir))
+  </function>
+
+  <function name="GLOBAL_IN_P" parameters="obj1, obj2" type="boolean">
+    if (HasString(obj2, "GLOBAL")) {
+      TX = obj2.GLOBAL
+      return (StringContains(TX, obj1.name))
+    }
+    return (false)
+  </function>
+
+  <function name="IN_P" parameters="obj1, obj2" type="boolean">
+    // Is obj1 IN obj2?
+    // dLog ("[IN_P]")
+    // dLog ("[IN_P] obj1: " + obj1.name)
+    // dLog ("[IN_P] obj2: " + obj2.name)
+    if (not HasAttribute(obj1,"parent") and not HasAttribute(obj1,"LOC")) {
+      // this should never trigger
+      // dLog ("[IN_P] " + obj1.name + " has no parent object")
+      // dLog ("[IN_P] returning false")
+      return (false)
+    }
+    if (HasAttribute(obj1,"LOC")) {
+      return (obj1.LOC = obj2)
+    }
+    if (obj1.parent = obj2) {
+      // dLog ("[IN_P] obj1 is in obj2; returning true")
+      return (true)
+    }
+    // dLog ("[IN_P] obj1 not in obj2; returning false")
+    return (false)
+  </function>
+
+  <function name="FIND_IN" parameters="WHERE, WHAT" type="object"><![CDATA[
+    visible = ListExclude(ListExclude(ScopeVisibleForRoom (WHERE), game.pov), ME)
+    if (ListCount(visible) < 1) {
+      return (NOTHING)
+    }
+    candidates = NewObjectList()
+    foreach (o, visible) {
+      if (GetBoolean (o,WHAT)) {
+        list add (candidates, o)
+      }
+    }
+    if (ListCount (candidates) < 1) {
+      return (NOTHING)
+    }
+    return (ListItem (candidates,0))
+  ]]></function>
+
+  <function name="HELD_P" parameters="CAN" type="boolean"><![CDATA[
+    pippo = false
+    parents = ListParents(CAN)
+    if (ListCount(parents)>0) {
+      pippo = ListContains(parents, game.pov)
+    }
+    return (pippo)
+  ]]></function>
+
+  <function name="OTHER_SIDE" parameters="DOBJ" type="object">
+    os = NOTHING
+    TX = GetExitByName(GLOBAL.HERE, DOBJ.name)
+    if (HasAttribute(TX,"DEXIT") and TX.DEXITOBJ = DOBJ) {
+      os = TX.to
+    }
+    return (os)
+  </function>
+
+  <function name="MUNG_ROOM" parameters="RM, STR">
+    FSET (RM, "RMUNGBIT")
+    RM.LDESC = STR
+  </function>
+
+  <function name="THIS_IS_IT" parameters="OBJ">
+    pn = OBJ.gender
+    if (DictionaryContains(GLOBAL.CURRENT_PRONOUNS, pn)) {
+      dictionary remove (GLOBAL.CURRENT_PRONOUNS, pn)
+    }
+    dictionary add (GLOBAL.CURRENT_PRONOUNS, pn, OBJ)
+  </function>
+
+  <function name="LIT_P" parameters="loc" type="boolean"><![CDATA[
+    if (not IsDefined("loc")) {
+      loc = GLOBAL.HERE
+    }
+    if (GetBoolean(loc,"ONBIT")) {
+      return (true)
+    }
+    if (ListCount(GetDirectChildren(game.pov))>0) {
+      foreach (o, GetDirectChildren(game.pov)) {
+        if ((GetBoolean(o,"LIGHTBIT") or GetBoolean(o,"FLAMEBIT")) and GetBoolean(o,"ONBIT")) {
+          return (true)
+        }
+      }
+    }
+    return (false)
+  ]]></function>
+
+  <function name="QUEUE" parameters="RTN, TICK" type="object">
+    dLog ("[QUEUE] RTN: " + RTN + ", TICK: " + TICK)
+    if (IsDefined("TICK")) {
+      if (not TICK = -1) {
+        RTN.TICK = TICK
+      }
+      else {
+        RTN.TICK = NULL
+      }
+    }
+    return (RTN)
+  </function>
+
+  <function name="RANDOM_ELEMENT" parameters="FROB" type="string">
+    // TODO - not sure what type to return here
+    return (FROB[RANDOM(ListCount(FROB) - 1)])
+  </function>
+
+  <function name="PICK_ONE" parameters="FROB" type="string"><![CDATA[
+    L = ListCount(FROB) - 1
+    CNT = ToInt(StringListItem(FROB,0))
+    list remove (FROB, StringListItem(FROB,0))
+    RFROB = NewStringList()
+    tmplist = ListExclude(FROB,"")
+    for (i, 0, L-1) {
+      if (i >= CNT) {
+        list remove (FROB, StringListItem(tmplist,i))
+        list add (RFROB, StringListItem(tmplist,i))
+      }
+    }
+    RND = RANDOM(L-CNT) - 1
+    MSG = ListItem (RFROB, RND)
+    tmplist = ListExclude(RFROB,"")
+    RFROB = NewStringList()
+    list add (RFROB, MSG)
+    len = ListCount(tmplist)
+    i = len - 1
+    n = RND
+    for (item, 0, i) {
+      if (item = n) {
+        list add (tmplist, ListItem(tmplist,0))
+      }
+      else {
+        list add (RFROB, ListItem(tmplist,item))
+      }
+    }
+    tmpfrob = ListExclude(FROB,"")
+    CNT = CNT + 1
+    if (CNT = L) {
+      CNT = 0
+    }
+    foreach (s, tmpfrob) {
+      list remove (FROB, s)
+    }
+    list add (FROB, ToString (CNT))
+    foreach (s, tmpfrob) {
+      list add (FROB, s)
+    }
+    foreach (s, RFROB) {
+      list add (FROB, s)
+    }
+    return (MSG)
+  ]]></function>
+
+  <function name="SETG" parameters="nm, val" type="boolean"><![CDATA[
+    set (GLOBAL, nm, val)
+    if (TypeOf(val) = "boolean") {
+      return (val)
+    }
+    if (TypeOf(val) = "object") {
+      return (not val = NOTHING)
+    }
+    if (TypeOf(val) = "int") {
+      return (val > 0)
+    }
+    if (TypeOf(val) = "string") {
+      return (not Trim(val) = "")
+    }
+    if (EndsWith(TypeOf(val),"list")) {
+      return (ListCount(val) > 0)
+    }
+    return (not val = null)
+  ]]></function>
+
+  <function name="REMOVE" parameters="OBJ">
+    RemoveObject (OBJ)
+  </function>
+
+  <function name="PRSO_P" parameters="arg" type="boolean">
+    return (Equal (GLOBAL.PRSO, arg))
+  </function>
+
+  <function name="PICK_ONE_OBJECT" parameters="FROB" type="object"><![CDATA[
+    L = ListCount(FROB) - 1
+    CNT = ListItem(FROB,0)
+    list remove (FROB, ListItem(FROB,0))
+    RFROB = NewList()
+    tmplist = ListExclude(FROB,"")
+    for (i, 0, L-1) {
+      if (i >= CNT) {
+        list remove (FROB, ListItem(tmplist,i))
+        list add (RFROB, ListItem(tmplist,i))
+      }
+    }
+    RND = RANDOM(L-CNT) - 1
+    RES = ListItem (RFROB, RND)
+    tmplist = ListExclude(RFROB,NewList())
+    RFROB = NewList()
+    list add (RFROB, MSG)
+    len = ListCount(tmplist)
+    i = len - 1
+    n = RND
+    for (item, 0, i) {
+      if (item = n) {
+        list add (tmplist, ListItem(tmplist,0))
+      }
+      else {
+        list add (RFROB, ListItem(tmplist,item))
+      }
+    }
+    tmpfrob = ListExclude(FROB,NewList())
+    CNT = CNT + 1
+    if (CNT = L) {
+      CNT = 0
+    }
+    foreach (s, tmpfrob) {
+      list remove (FROB, s)
+    }
+    list add (FROB, CNT)
+    foreach (s, tmpfrob) {
+      list add (FROB, s)
+    }
+    foreach (s, RFROB) {
+      list add (FROB, s)
+    }
+    return (RES)
+  ]]></function>
+
+  <function name="BTST" parameters="val1, val2" type="boolean"><![CDATA[
+    return ((val1 and val2) <> 0)
+  ]]></function>
+
+</library>
