@@ -443,7 +443,7 @@
     <pattern>VERSION;VERSIO;ABOUT</pattern>
     <script><![CDATA[
       SuppressTurnscripts
-      msg ("<div style=\"font-size:88%;\"><b>ZORK I: The Great Underground Empire</b><br/>by Marc Blank and Dave Lebling<br/>Infocom interactive fiction - a fantasy story<br/>Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.<br/>ZORK is a registered trademark of Infocom, Inc.<br/>MIT License - Copyright (c) 2025 Microsoft<br/>2026 Quest Viva port by KV<br/>IFID: {=UCase(game.gameid)}<br/>v{game.version}</div>")
+      msg ("<div style=\"font-size:88%;\"><b>ZORK I: The Great Underground Empire</b><br/>by Marc Blank and Dave Lebling<br/>Infocom interactive fiction - a fantasy story<br/>Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.<br/>ZORK is a registered trademark of Infocom, Inc.<br/>MIT License - Copyright (c) 2025 Microsoft<br/>2026 Quest Viva port by KV<br/>IFID: {=UCase(game.gameid)}<br/>v{game.version}.{game.versioncode}</div>")
     ]]></script>
     <META />
     <SYNONYM>VERSION VERSIO ABOUT</SYNONYM>
