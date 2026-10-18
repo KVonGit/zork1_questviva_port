@@ -227,10 +227,8 @@
   ]]></function>
 
   <function name="RANDOM" parameters="range" type="int"><![CDATA[
-    // Version 6
-    // Code from GitHub Copilot, based on Infocom's MS-DOS ZIP assembly
+    // Based on Infocom's MS-DOS ZIP assembly
     // https://github.com/erkyrath/infocom-zcode-terps/blob/d5ac95a838483af89004dc9f5027abc0163a2ecc/msdos/mszip.asm
-    // Initialize seed if needed
     if (not HasAttribute(GLOBAL, "rng_seed1")) {
       cdUTC = CurrentDateUTC()
       if (not TypeOf(cdUTC) = "int") {
@@ -242,41 +240,28 @@
         GLOBAL.rng_seed2 = (cdUTC / 65536) % 65536
       }
     }
-    // Seeding mode: negative range sets the seed
     if (range < 1) {
       msg ("[RANDOM adjusted for predictability.]")
       if (range < 0) {
         GLOBAL.rng_seed1 = abs(range) % 65536
-        // GLOBAL.rng_seed2 = GetRandomInt(0, 65535)
         GLOBAL.rng_seed2 = 0
         // msg ("GLOBAL.rng_seed1 : " + GLOBAL.rng_seed1)
         // msg ("GLOBAL.rng_seed2 : " + GLOBAL.rng_seed2)
       }
       return (0)
     }
-    // Perform the Z-Machine RNG algorithm
-    // Save current seeds
     local_seed1 = GLOBAL.rng_seed1
     local_seed2 = GLOBAL.rng_seed2
-    // Move seed1 to seed2
     GLOBAL.rng_seed2 = local_seed1
-    // Rotate right with carry:
-    // Extract carry from seed1's LSB
     carry = local_seed1 % 2
-    // Shift both seeds right by 1
     local_seed1 = local_seed1 >> 1
     local_seed2 = local_seed2 >> 1
-    // If there was a carry, add it to the MSB of seed2
     if (carry = 1) {
       local_seed2 = local_seed2 + 32768
     }
-    // XOR and store result
     GLOBAL.rng_seed1 = local_seed1 xor local_seed2
-    // Mask to 15 bits (0x7FFF = binary 0111111111111111)
     GLOBAL.rng_seed1 = GLOBAL.rng_seed1 and 0x7FFF
-    // Get remainder when divided by range
     result = GLOBAL.rng_seed1 % range
-    // Return 1 to range (not 0)
     return (result + 1)
   ]]></function>
 
