@@ -1,4 +1,4 @@
-<!--Saved by Quest Viva 6.0.1-->
+<!--Saved by Quest Viva 6.0.2-->
 <asl version="600">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -14,7 +14,7 @@
     <gameid>qcode-z1-0-261018-qviva602</gameid>
     <version>0</version>
     <release type="int">0</release>
-    <serial type="int">261013</serial>
+    <serial type="int">261018</serial>
     <firstpublished>2026</firstpublished>
     <debugging type="boolean">false</debugging>
     <attr name="debug_fighting" type="boolean">false</attr>
@@ -44,7 +44,7 @@
     <customlocationbordercolour>Black</customlocationbordercolour>
     <marginscolour type="string"></marginscolour>
     <publishfileextensions>*.jpg;*.jpeg;*.png;*.gif;*.js;*.wav;*.mp3;*.htm;*.html;*.svg;*.zip</publishfileextensions>
-    <versioncode type="int">9</versioncode>
+    <versioncode type="int">10</versioncode>
     <pov type="object">ADVENTURER</pov>
     <start type="script">
       PreGO

@@ -231,14 +231,8 @@
     // https://github.com/erkyrath/infocom-zcode-terps/blob/d5ac95a838483af89004dc9f5027abc0163a2ecc/msdos/mszip.asm
     if (not HasAttribute(GLOBAL, "rng_seed1")) {
       cdUTC = CurrentDateUTC()
-      if (not TypeOf(cdUTC) = "int") {
-        GLOBAL.rng_seed1 = 0x8D0E
-        GLOBAL.rng_seed2 = 0x9F81
-      }
-      else {
-        GLOBAL.rng_seed1 = cdUTC % 65536
-        GLOBAL.rng_seed2 = (cdUTC / 65536) % 65536
-      }
+      GLOBAL.rng_seed1 = cdUTC % 65536
+      GLOBAL.rng_seed2 = (cdUTC / 65536) % 65536
     }
     if (range < 1) {
       msg ("[RANDOM adjusted for predictability.]")
