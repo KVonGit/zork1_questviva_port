@@ -228,7 +228,7 @@
 
   <function name="RANDOM" parameters="range" type="int"><![CDATA[
     // Based on Infocom's MS-DOS ZIP assembly
-    // https://github.com/erkyrath/infocom-zcode-terps/blob/d5ac95a838483af89004dc9f5027abc0163a2ecc/msdos/mszip.asm
+    // https://github.com/erkyrath/infocom-zcode-terps/blob/d5ac95a838483af89004dc9f5027abc0163a2ecc/msdos/mszip.asm#L850-L869
     if (not HasAttribute(GLOBAL, "rng_seed1")) {
       cdUTC = CurrentDateUTC()
       GLOBAL.rng_seed1 = cdUTC % 65536

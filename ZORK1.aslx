@@ -1,4 +1,4 @@
-<!--Saved by Quest Viva 6.0.2-->
+<!--Saved by Quest Viva 6.0.3-->
 <asl version="600">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -11,7 +11,7 @@
   <include ref="z1ParserAddons.aslx" />
   <include ref="z1globals.aslx" />
   <game name="ZORK I: The Great Underground Empire">
-    <gameid>qcode-z1-0-261018-qviva602</gameid>
+    <gameid>qcode-z1-0-261026-qviva603</gameid>
     <version>0</version>
     <release type="int">0</release>
     <serial type="int">261018</serial>
@@ -19,7 +19,7 @@
     <debugging type="boolean">false</debugging>
     <attr name="debug_fighting" type="boolean">false</attr>
     <subtitle>Infocom interactive fiction - a fantasy story</subtitle>
-    <description><![CDATA[by Marc Blank and Dave Lebling<br/>Infocom interactive fiction - a fantasy story<br/>Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.<br/>ZORK is a registered trademark of Infocom, Inc.<br/>MIT License - Copyright (c) 2025 Microsoft<br/>2026 Quest Viva port by KV<br/>v0.8<br/><br/>Manual:<br/>https://infodoc.plover.net/manuals/zork1.pdf<br/><br/>Map:<br/>https://eblong.com/infocom/maps/zork-1-map-ZUG-1982.jpeg<br/><br/>InvisiClues (hints):<br/>https://dfabulich.github.io/infocom-hints-html/zork-i-the-great-underground-empire.html<br/><br/>Walkthrough:<br/>http://www.eristic.net/games/infocom/zork1.html<br/><br/>Source:<br/>https://github.com/KVonGit/zork1_questviva_port]]></description>
+    <description><![CDATA[by Marc Blank and Dave Lebling<br/>Infocom interactive fiction - a fantasy story<br/>Copyright (c) 1981, 1982, 1983, 1984, 1985, 1986 Infocom, Inc. All rights reserved.<br/>ZORK is a registered trademark of Infocom, Inc.<br/>MIT License - Copyright (c) 2025 Microsoft<br/>2026 Quest Viva port by KV<br/>v0.11<br/><br/>Manual:<br/>https://infodoc.plover.net/manuals/zork1.pdf<br/><br/>Map:<br/>https://eblong.com/infocom/maps/zork-1-map-ZUG-1982.jpeg<br/><br/>InvisiClues (hints):<br/>https://dfabulich.github.io/infocom-hints-html/zork-i-the-great-underground-empire.html<br/><br/>Walkthrough:<br/>http://www.eristic.net/games/infocom/zork1.html<br/><br/>Source:<br/>https://github.com/KVonGit/zork1_questviva_port]]></description>
     <author>Marc Blank and Dave Lebling</author>
     <category>Fantasy</category>
     <showtitle type="boolean">false</showtitle>
@@ -44,7 +44,7 @@
     <customlocationbordercolour>Black</customlocationbordercolour>
     <marginscolour type="string"></marginscolour>
     <publishfileextensions>*.jpg;*.jpeg;*.png;*.gif;*.js;*.wav;*.mp3;*.htm;*.html;*.svg;*.zip</publishfileextensions>
-    <versioncode type="int">10</versioncode>
+    <versioncode type="int">11</versioncode>
     <pov type="object">ADVENTURER</pov>
     <start type="script">
       PreGO
