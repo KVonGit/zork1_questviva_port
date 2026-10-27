@@ -307,7 +307,7 @@
       get input {
         if (LCase(Trim(result)) = "yes" or LCase(Trim(result)) = "y") {
           msg ("Restarting.")
-          JS.eval ("if(webPlayer){window.location.reload();}else if (typeof(RestartGame) != 'undefined'){RestartGame();}else{addTextAndScroll('Try pressing CTRL+R.')};")
+          JS.eval ("window.location.reload();")
           SetTimeout (3) {
             msg ("Failed.")
           }
@@ -328,7 +328,7 @@
     <pattern>RESTORE #text#; RESTORE</pattern>
     <script><![CDATA[
       SuppressTurnscripts
-      JS.eval("addText (\"Quest 5 doesn't work that way.<br/>\"); if (window.location.href.indexOf(\"res\") == 0) { addTextAndScroll (\"To play from a save from the Windows app, you must directly load the save file instead of the game itself.<br/>\"); }else{ addTextAndScroll (\"To access your saves online, restart the game or open a new tab and start the game to load the list of saves.<br/>You should also check out the <a target=\\\"_blank\\\" href=\\\"https://textadventures.co.uk/games/play/q_zjajkiwuu8ijbmyyixrw\\\">Viva Save Manager</a><br/>\"); }")
+      msg ("Quest Viva doesn't work that way.<br/><br/>To access your saves, restart the game to load the list of saves.<br/>")
     ]]></script>
     <META />
     <SYNONYM>RESTORE</SYNONYM>
