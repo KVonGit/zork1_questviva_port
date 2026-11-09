@@ -140,6 +140,12 @@
       }
     }
     on ready {
+      if (not HasAttribute (game, "pov")){
+        game.pov = ADVENTURER
+      }
+      if (not HasAttribute (game.pov, "parent")) {
+        game.pov.parent = WEST_OF_HOUSE
+      }
       if ((not GetBoolean(game.pov.parent, "visited")) and HasScript(game.pov.parent, "beforefirstenter")) {
         do (game.pov.parent, "beforefirstenter")
       }

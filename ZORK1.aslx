@@ -1,4 +1,4 @@
-<!--Saved by Quest Viva 6.0.3-->
+<!--Saved by Quest Viva 6.0.4-->
 <asl version="600">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -11,10 +11,10 @@
   <include ref="z1ParserAddons.aslx" />
   <include ref="z1globals.aslx" />
   <game name="ZORK I: The Great Underground Empire">
-    <gameid>qcode-z1-0-261027-qviva603</gameid>
+    <gameid>qcode-z1-0-261109-qviva604</gameid>
     <version>0</version>
     <release type="int">0</release>
-    <serial type="int">261018</serial>
+    <serial type="int">261109</serial>
     <firstpublished>2026</firstpublished>
     <debugging type="boolean">false</debugging>
     <attr name="debug_fighting" type="boolean">false</attr>
@@ -44,23 +44,29 @@
     <customlocationbordercolour>Black</customlocationbordercolour>
     <marginscolour type="string"></marginscolour>
     <publishfileextensions>*.jpg;*.jpeg;*.png;*.gif;*.js;*.wav;*.mp3;*.htm;*.html;*.svg;*.zip</publishfileextensions>
-    <versioncode type="int">12</versioncode>
+    <versioncode type="int">14</versioncode>
+    <attr name="ps_object" type="int">128</attr>
+    <attr name="ps_verb" type="int">64</attr>
+    <attr name="ps_adjective" type="int">32</attr>
+    <attr name="ps_preposition" type="int">16</attr>
+    <attr name="ps_direction" type="int">8</attr>
+    <attr name="ps_buzz" type="int">4</attr>
     <pov type="object">ADVENTURER</pov>
     <start type="script">
       PreGO
       GO
-      BuildGrammarLists
-    </start>
+      // BuildGrammarLists
+</start>
     <scopebackdrop type="script">
       AddGlobalObjectsToScope (items)
-    </scopebackdrop>
+</scopebackdrop>
     <inituserinterface type="script">
       RemoveTypeHereLabel
       FixContinueLink
-    </inituserinterface>
+</inituserinterface>
     <unresolvedcommandhandler type="script">
       UnresolvedCommandHandlerF (command)
-    </unresolvedcommandhandler>
+</unresolvedcommandhandler>
   </game>
   <command name="V_READ">
     <pattern type="string"><![CDATA[^(LOOK|L|STARE|GAZE) AT (?<object1>.*) WITH (?<object2>.*)$|^(READ|SKIM) (?<object1>.*)(| WITH) (?<object2>.*)$|^(READ|SKIM)(| FROM) (?<object1>.*)$]]></pattern>
@@ -83,7 +89,7 @@
           msg (GLOBAL.PRSO.TEXT)
         }
       }
-    </script>
+</script>
   </command>
   <object name="room">
     <inherit name="editor_object" />
@@ -107,7 +113,7 @@
           }
         }
         this.hasbeenmoved = true
-      </changedparent>
+</changedparent>
     </object>
   </object>
   <walkthrough name="eristic">
@@ -489,6 +495,6 @@
       w
       sw
       w
-    </steps>
+</steps>
   </walkthrough>
 </asl>
